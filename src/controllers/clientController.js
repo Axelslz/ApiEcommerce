@@ -1,50 +1,40 @@
 const ClientService = require('../services/clientService');
 
-const ClientController = {
-    createClient: (req, res) => {
-        const clientData = req.body;
-        ClientService.createClient(clientData)
-          .then((result) => {
-            res.status(201).json({
-              message: 'Cliente creado exitosamente',
-              id: result.insertId,  
-              name: clientData.name,
-              phone: clientData.phone,
-              email: clientData.email
-            });
-          })
-          .catch((error) => {
-            res.status(500).json({ message: error.message });
-          });
-      },
+exports.addClient = async (req, res) => {
+    try {
+      const data = req.body;
+      console.log("Datos recibidos:", data); 
+      const result = await ClientService.addClient(data);
+      console.log("Resultado del insert:", result); 
 
-    getClientById: async (req, res) => {
-        try {
-          const client = await ClientService.getClientById(req.params.id);
-          res.json(client);
-        } catch (error) {
-          res.status(404).json({ message: 'Cliente no encontrado' });
-        }
-      },
-    
-      update: async (req, res) => {
-        try {
-          const clientData = req.body;
-          const result = await ClientService.updateClient(req.params.id, clientData);
-          res.json({ message: 'Cliente actualizado exitosamente' });
-        } catch (error) {
-          res.status(500).json({ message: error.message });
-        }
-      },
-    
-      delete: async (req, res) => {
-        try {
-          await ClientService.deleteClient(req.params.id);
-          res.json({ message: 'Cliente eliminado exitosamente' });
-        } catch (error) {
-          res.status(500).json({ message: error.message });
-        }
-      }
+      res.status(201).json({
+        message: 'Cliente agregado exitosamente',
+        id: result.insertId,
+        nombre: data.nombre,
+        telefono: data.telefono,
+        correo: data.correo,
+      });
+    } catch (error) {
+      console.error("Error en el controlador:", error); 
+      res.status(500).json({ error: error.message });
     };
+};
 
-module.exports = ClientController;
+exports.updateClient = async (req, res) => {
+    try {
+      const id = req.params.id; 
+      const data = req.body; 
+      await ClientService.updateClient(id, data);
+  
+      res.status(200).json({
+        message: 'Cliente actualizado exitosamente',
+        id: id,
+        nombre: data.nombre,
+        telefono: data.telefono,
+        correo: data.correo,
+      });
+    } catch (error) {
+      console.error("Error en el controlador:", error); 
+      res.status(500).json({ error: error.message });
+    }
+  };

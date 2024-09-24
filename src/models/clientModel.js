@@ -1,42 +1,47 @@
 const db = require('../config/database');
 
-const ClientModel = {
-  create: (clientData, callback) => {
-    const query = 'INSERT INTO clients (name, surname, phone, emergency_contact, email, birthdate, age) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    db.query(query, [
-      clientData.name, 
-      clientData.surname, 
-      clientData.phone, 
-      clientData.emergency_contact, 
-      clientData.email, 
-      clientData.birthdate, 
-      clientData.age
-    ], callback);
-  },
-  
-  findById: (id, callback) => {
-    const query = 'SELECT * FROM clients WHERE id = ?';
-    db.query(query, [id], callback);
-  },
+const Client = {
+    addClient: (data, callback) => {
+        const query = `
+            INSERT INTO clientes (nombre, apellidos, telefono, contacto_emergencia, correo, fecha_nacimiento, edad) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        `;
+        db.query(query, [
+            data.nombre,
+            data.apellidos,
+            data.telefono,
+            data.contacto_emergencia,
+            data.correo,
+            data.fecha_nacimiento,
+            data.edad
+        ], callback);
+    },
 
-  update: (id, clientData, callback) => {
-    const query = 'UPDATE clients SET name = ?, surname = ?, phone = ?, emergency_contact = ?, email = ?, birthdate = ?, age = ? WHERE id = ?';
-    db.query(query, [
-      clientData.name, 
-      clientData.surname, 
-      clientData.phone, 
-      clientData.emergency_contact, 
-      clientData.email, 
-      clientData.birthdate, 
-      clientData.age,
-      id
-    ], callback);
-  },
-
-  delete: (id, callback) => {
-    const query = 'DELETE FROM clients WHERE id = ?';
-    db.query(query, [id], callback);
-  }
+    updateClient: (id, data, callback) => {
+        const query = `
+            UPDATE clientes SET 
+                nombre = ?, 
+                apellidos = ?, 
+                telefono = ?, 
+                contacto_emergencia = ?, 
+                correo = ?, 
+                fecha_nacimiento = ?, 
+                edad = ?, 
+                updated_at = CURRENT_TIMESTAMP 
+            WHERE id = ?
+        `;
+        db.query(query, [
+            data.nombre,
+            data.apellidos,
+            data.telefono,
+            data.contacto_emergencia,
+            data.correo,
+            data.fecha_nacimiento,
+            data.edad,
+            id
+        ], callback);
+    }
 };
 
-module.exports = ClientModel;
+module.exports = Client;
+

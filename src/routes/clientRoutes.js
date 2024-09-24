@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const ClientController = require('../controllers/clientController');
+const clientController = require('../controllers/clientController');
+const clientMiddleware = require('../middlewares/clientMiddleware');
 
-router.post('/', ClientController.createClient);
-router.get('/:id', ClientController.getClientById);
-router.put('/update/:id', ClientController.update);
-router.delete('/delete/:id', ClientController.delete);
+router.post('/agregar', clientMiddleware, clientController.addClient);
+router.put('/editar/:id', clientMiddleware, clientController.updateClient);
 
 module.exports = router;
+
