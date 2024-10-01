@@ -8,11 +8,7 @@ exports.addClient = async (req, res) => {
       console.log("Resultado del insert:", result); 
 
       res.status(201).json({
-        message: 'Cliente agregado exitosamente',
-        id: result.insertId,
-        nombre: data.nombre,
-        telefono: data.telefono,
-        correo: data.correo,
+        message: 'Cliente agregado exitosamente'
       });
     } catch (error) {
       console.error("Error en el controlador:", error); 
@@ -27,11 +23,7 @@ exports.updateClient = async (req, res) => {
       await ClientService.updateClient(id, data);
   
       res.status(200).json({
-        message: 'Cliente actualizado exitosamente',
-        id: id,
-        nombre: data.nombre,
-        telefono: data.telefono,
-        correo: data.correo,
+        message: 'Cliente actualizado exitosamente'
       });
     } catch (error) {
       console.error("Error en el controlador:", error); 

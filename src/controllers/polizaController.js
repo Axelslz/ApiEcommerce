@@ -13,7 +13,10 @@ exports.agregarPoliza = async (req, res) => {
         };
 
         const result = await PolizaService.agregarPoliza(nuevaPoliza);
-        res.status(201).json({ message: 'Póliza agregada', id: result.insertId });
+        
+        res.status(201).json({
+            message: 'Póliza agregada'
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -40,10 +43,20 @@ exports.eliminarPoliza = async (req, res) => {
     }
 };
 
-exports.obtenerPolizas = async (req, res) => {
+exports.obtenerPolizaPorId = async (req, res) => {
     try {
-        const polizas = await PolizaService.obtenerPolizas();
-        res.status(200).json(polizas);
+        const { id } = req.params;
+        const poliza = await PolizaService.obtenerPolizaPorId(id); 
+
+        if (!poliza) {
+            return res.status(404).json({ message: 'Póliza no encontrada' });
+        }
+
+        res.status(200).json({
+            id: poliza.id,
+            asegurado: poliza.asegurado,
+            tipo_seguro: poliza.tipo_seguro
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

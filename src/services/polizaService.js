@@ -1,4 +1,5 @@
 const Poliza = require('../models/polizaModel');
+const db = require('../config/database');
 
 class PolizaService {
     static agregarPoliza(data) {
@@ -28,14 +29,20 @@ class PolizaService {
         });
     }
 
-    static obtenerPolizas() {
+    static obtenerPolizaPorId(id) {
         return new Promise((resolve, reject) => {
-            Poliza.obtenerPolizas((err, result) => {
+            const query = 'SELECT id, asegurado, tipo_seguro FROM polizas WHERE id = ?'; // Solo devolver id, asegurado y tipo_seguro
+            db.query(query, [id], (err, results) => {
                 if (err) return reject(err);
-                resolve(result);
+                if (results.length > 0) {
+                    resolve(results[0]); 
+                } else {
+                    resolve(null); 
+                }
             });
         });
     }
+    
 }
 
 module.exports = PolizaService;

@@ -3,7 +3,7 @@ const db = require('../config/database');
 const Client = {
     addClient: (data, callback) => {
         const query = `
-            INSERT INTO clientes (nombre, apellidos, telefono, contacto_emergencia, correo, fecha_nacimiento, edad) 
+            INSERT INTO clientes (nombre, apellidos, telefono, contacto_emergencia, correo, fecha_nacimiento) 
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `;
         db.query(query, [
@@ -13,7 +13,6 @@ const Client = {
             data.contacto_emergencia,
             data.correo,
             data.fecha_nacimiento,
-            data.edad
         ], callback);
     },
 
@@ -26,7 +25,6 @@ const Client = {
                 contacto_emergencia = ?, 
                 correo = ?, 
                 fecha_nacimiento = ?, 
-                edad = ?, 
                 updated_at = CURRENT_TIMESTAMP 
             WHERE id = ?
         `;
@@ -37,7 +35,6 @@ const Client = {
             data.contacto_emergencia,
             data.correo,
             data.fecha_nacimiento,
-            data.edad,
             id
         ], callback);
     }

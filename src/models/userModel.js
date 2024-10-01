@@ -9,8 +9,8 @@ const UserModel = {
   findByEmail: (email, callback) => {
     const query = 'SELECT * FROM users WHERE email = ?';
     db.query(query, [email], (err, results) => {
-        console.log("Results from DB: ", results); // Agrega esto para depuración
-        callback(err, results[0]); // Asegúrate de devolver solo un usuario
+        console.log("Results from DB: ", results); 
+        callback(err, results[0]); 
     });
   },
   
