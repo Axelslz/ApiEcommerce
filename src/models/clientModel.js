@@ -37,6 +37,22 @@ const Client = {
             data.fecha_nacimiento,
             id
         ], callback);
+    },
+    
+    searchClients: (searchTerm, callback) => {
+        const query = `
+            SELECT * FROM clientes
+            WHERE nombre LIKE ? OR apellidos LIKE ? OR telefono LIKE ? OR contacto_emergencia LIKE ? OR correo LIKE ? OR fecha_nacimiento LIKE ?
+        `;
+        const likeSearchTerm = `%${searchTerm}%`;
+        db.query(query, [
+            likeSearchTerm, 
+            likeSearchTerm, 
+            likeSearchTerm, 
+            likeSearchTerm, 
+            likeSearchTerm, 
+            likeSearchTerm
+        ], callback);
     }
 };
 

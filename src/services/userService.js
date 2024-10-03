@@ -28,14 +28,9 @@ const UserService = {
           if (!passwordMatch) {
             reject('Incorrect password');
           } else {
-            // Crear el token JWT usando el ID del usuario
             const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-            // Eliminar password y profile_picture antes de devolver el usuario
             delete user.password;
             delete user.profile_picture;
-
-            // Devolver el usuario sin la contraseña y con el token
             resolve({ user, token });
           }
         }
@@ -100,6 +95,19 @@ const UserService = {
       });
     });
   },
+
+  updateUser: async (userId, updatedData) => {
+    return new Promise((resolve, reject) => {
+      UserModel.update(userId, updatedData, (err, results) => {
+        if (err) {
+          reject('Error al actualizar el usuario');
+        } else {
+          resolve(results);
+        }
+      });
+    });
+  },  
+  
 };
 
 module.exports = UserService;

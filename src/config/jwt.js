@@ -4,7 +4,7 @@ const generatePasswordResetToken = (user) => {
   const token = jwt.sign(
     { id: user.id, email: user.email },
     Math.random().toString(36).substring(7),  
-    { expiresIn: '15m' }  
+    { expiresIn: '1h' }  
   );
   return token;
 };

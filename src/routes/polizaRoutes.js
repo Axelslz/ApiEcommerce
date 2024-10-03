@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const polizaController = require('../controllers/polizaController');
 
-router.post('/', polizaController.agregarPoliza);
-router.put('/:id', polizaController.editarPoliza);
-router.delete('/:id', polizaController.eliminarPoliza);
-router.get('/:id', polizaController.obtenerPolizaPorId);
+router.post('/polizas', polizaController.agregarPoliza);
+router.put('/polizas/:id', polizaController.editarPoliza);
+router.delete('/polizas/:id', polizaController.eliminarPoliza);
+router.get('/polizas/:id', polizaController.obtenerPolizaPorId);
 
 module.exports = router;

@@ -2,8 +2,8 @@ const db = require('../config/database');
 
 const UserModel = {
   create: (userData, callback) => {
-    const query = 'INSERT INTO users (name, email, password, profile_picture) VALUES (?, ?, ?, ?)';
-    db.query(query, [userData.name, userData.email, userData.password, userData.profile_picture], callback);
+    const query = 'INSERT INTO users (name, last_name, email, password, profile_picture) VALUES (?, ?, ?, ?, ?)';
+    db.query(query, [userData.name, userData.last_name, userData.email, userData.password, userData.profile_picture], callback);
   },
   
   findByEmail: (email, callback) => {
@@ -15,8 +15,8 @@ const UserModel = {
   },
   
   update: (id, userData, callback) => {
-    const query = 'UPDATE users SET name = ?, email = ?, profile_picture = ? WHERE id = ?';
-    db.query(query, [userData.name, userData.email, userData.profile_picture, id], callback);
+    const query = 'UPDATE users SET name = ?, last_name = ?, email = ?, profile_picture = ? WHERE id = ?';
+    db.query(query, [userData.name, userData.last_name, userData.email, id], callback);
   },
   
   findById: (id, callback) => {

@@ -34,13 +34,14 @@ const sendPasswordResetEmail = async (email, token) => {
 
 const UserController = {
   register: (req, res) => {
-    const userData = req.body;
+    const { name, last_name, email, password, profile_picture } = req.body;
+    const userData = { name, last_name, email, password, profile_picture };
     UserService.createUser(userData)
       .then(() => {
-        res.status(201).json({ message: `Bienvenido, ${userData.name}! Registro Exitoso.` });
+          res.status(201).json({ message: `Bienvenido, ${name} ${last_name}! Registro Exitoso.` });
       })
       .catch((error) => {
-        res.status(500).json({ message: error });
+          res.status(500).json({ message: error });
       });
   },
 
@@ -88,6 +89,24 @@ const UserController = {
     } catch (error) {
       res.status(400).json({ message: 'Token inválido o expirado' });
     }
+  },
+  
+  updateUser: async (req, res) => {
+    const userId = req.params.id;
+    const updatedData = req.body;
+    console.log(`Actualizando usuario con ID: ${userId}`, updatedData);
+
+    try {
+      const result = await UserService.updateUser(userId, updatedData);
+      if (result.affectedRows === 0) {
+          return res.status(404).json({ message: 'Usuario no encontrado' });
+      }
+      
+      res.status(200).json({ message: 'Usuario actualizado exitosamente' });
+  } catch (error) {
+      console.error('Error al actualizar el usuario:', error); 
+      res.status(500).json({ message: 'Error al actualizar el usuario' });
+  }
   },
 };
 

@@ -28,17 +28,25 @@ class PolizaService {
             });
         });
     }
-
-    static obtenerPolizaPorId(id) {
+    
+    static searchPolicies(query) {
         return new Promise((resolve, reject) => {
-            const query = 'SELECT id, asegurado, tipo_seguro FROM polizas WHERE id = ?'; // Solo devolver id, asegurado y tipo_seguro
-            db.query(query, [id], (err, results) => {
+            const searchQuery = `
+                SELECT * FROM polizas
+                WHERE tipo_seguro LIKE ?
+                OR prima_neta LIKE ?
+                OR asegurado LIKE ?
+                OR vigencia_de LIKE ?
+                OR vigencia_hasta LIKE ?
+                OR periodicidad_pago LIKE ?
+                OR archivo_pdf LIKE ?
+            `;
+            const likeQuery = `%${query}%`;
+            db.query(searchQuery, [
+                likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery
+            ], (err, results) => {
                 if (err) return reject(err);
-                if (results.length > 0) {
-                    resolve(results[0]); 
-                } else {
-                    resolve(null); 
-                }
+                resolve(results);
             });
         });
     }

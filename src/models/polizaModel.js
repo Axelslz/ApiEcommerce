@@ -13,8 +13,8 @@ module.exports = {
         const query = 'DELETE FROM polizas WHERE id = ?';
         db.query(query, [id], callback);
     },
-    obtenerPolizas: (callback) => {
-        const query = 'SELECT * FROM polizas';
-        db.query(query, callback);
-    }
+    obtenerPolizaPorId: (id, callback) => {
+        const query = 'SELECT * FROM polizas WHERE id = ?';
+        db.query(query, id, callback);
+    },
 };

@@ -46,18 +46,13 @@ exports.eliminarPoliza = async (req, res) => {
 exports.obtenerPolizaPorId = async (req, res) => {
     try {
         const { id } = req.params;
-        const poliza = await PolizaService.obtenerPolizaPorId(id); 
-
+        const poliza = await PolizaService.obtenerPolizaPorId(id); // Asegúrate de que este método exista en PolizaService
         if (!poliza) {
             return res.status(404).json({ message: 'Póliza no encontrada' });
         }
-
-        res.status(200).json({
-            id: poliza.id,
-            asegurado: poliza.asegurado,
-            tipo_seguro: poliza.tipo_seguro
-        });
+        res.status(200).json(poliza);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
+

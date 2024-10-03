@@ -21,10 +21,22 @@ const ClientService = {
                 resolve(result);
             });
         });
+    },
+
+    searchClients: (query) => {
+        return new Promise((resolve, reject) => {
+            Client.searchClients(query, (err, results) => {  // Cambiar aquí
+                if (err) {
+                    return reject(err);
+                }
+                resolve(results);
+            });
+        });
     }
 };
 
 module.exports = ClientService;
+
 
 
 
