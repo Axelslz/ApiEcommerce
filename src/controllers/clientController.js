@@ -24,3 +24,14 @@ exports.updateClient = async (req, res) => {
       res.status(500).json({ error: error.message });
   }
 };
+
+exports.getClients = async (req, res) => {
+  try {
+      const page = parseInt(req.query.page) || 1;  
+      const clients = await clientService.getClientsPaginated(page);  // Aquí estaba el error, debería ser "clientService"
+      res.status(200).json(clients);
+  } catch (error) {
+      console.error("Error en el controlador:", error);
+      res.status(500).json({ error: error.message });
+  }
+};

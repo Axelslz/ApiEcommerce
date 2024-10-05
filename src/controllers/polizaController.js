@@ -57,3 +57,16 @@ exports.obtenerPolizaPorId = async (req, res) => {
     }
 };
 
+exports.obtenerTodasPolizas = async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 5;  // Limitar a 5 por defecto
+        const page = parseInt(req.query.page) || 1;  // Página 1 por defecto
+        const offset = (page - 1) * limit;
+
+        const polizas = await PolizaService.obtenerTodasPolizas(limit, offset);
+        res.status(200).json(polizas);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+

@@ -45,6 +45,15 @@ class PolizaService {
             });
         });
     }
+
+    static obtenerTodasPolizas(limit, offset) {
+        return new Promise((resolve, reject) => {
+            Poliza.obtenerTodasPolizas(limit, offset, (err, results) => {
+                if (err) return reject(err);
+                resolve(results);
+            });
+        });
+    }
 }
 
 module.exports = PolizaService;

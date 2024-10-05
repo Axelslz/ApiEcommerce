@@ -5,6 +5,7 @@ const clientMiddleware = require('../middlewares/clientMiddleware');
 
 router.post('/agregar', clientMiddleware, clientController.addClient);
 router.put('/editar/:id', clientMiddleware, clientController.updateClient);
+router.get('/obtener', clientController.getClients);
 
 module.exports = router;
 

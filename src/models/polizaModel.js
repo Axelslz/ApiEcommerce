@@ -1,5 +1,30 @@
 const db = require('../config/database');
 
+const createPolizaTable = async () => {
+    const query = `
+        CREATE TABLE IF NOT EXISTS polizas (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            tipo_seguro VARCHAR(255),
+            prima_neta DECIMAL(10, 2),
+            asegurado VARCHAR(255),
+            vigencia_de DATE,
+            vigencia_hasta DATE,
+            periodicidad_pago VARCHAR(255),
+            archivo_pdf VARCHAR(255),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `;
+
+    try {
+        await db.query(query);
+        console.log('Tabla polizas verificada o creada correctamente');
+    } catch (error) {
+        console.error('Error al verificar/crear la tabla polizas:', error);
+    }
+};
+
+createPolizaTable();
+
 module.exports = {
     agregarPoliza: (data, callback) => {
         const query = 'INSERT INTO polizas SET ?';
@@ -30,6 +55,11 @@ module.exports = {
             likeSearchTerm, likeSearchTerm, likeSearchTerm, 
             likeSearchTerm
         ], callback);
+    },
+
+    obtenerTodasPolizas: (limit, offset, callback) => {
+        const query = 'SELECT * FROM polizas LIMIT ? OFFSET ?';
+        db.query(query, [limit, offset], callback);
     }
 };
 

@@ -96,17 +96,13 @@ const UserController = {
     const updatedData = req.body;
   
     try {
-      // Actualiza el usuario y obtiene el resultado
       const result = await UserService.updateUser(userId, updatedData);
-  
-      // Genera un nuevo token para el usuario actualizado
       const token = jwt.sign({ id: result.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-  
-      // Envía la respuesta en el formato deseado
+
       res.status(200).json({
         message: 'Usuario actualizado exitosamente',
         user: {
-          id: result.id,             // Asegúrate de que `result` contenga estos campos
+          id: result.id,             
           name: result.name,
           last_name: result.last_name,
           email: result.email,
@@ -118,9 +114,6 @@ const UserController = {
       res.status(500).json({ message: `Error al actualizar el usuario: ${error.message || error}` });
     }
   },
-  
-  
-  
 };
 
 module.exports = UserController;

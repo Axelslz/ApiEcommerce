@@ -1,5 +1,29 @@
 const db = require('../config/database');
 
+const createClientTable = async () => {
+    const query = `
+        CREATE TABLE IF NOT EXISTS clientes (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nombre VARCHAR(255) NOT NULL,
+            apellidos VARCHAR(255) NOT NULL,
+            telefono VARCHAR(20),
+            contacto_emergencia VARCHAR(20),
+            correo VARCHAR(255) NOT NULL UNIQUE,
+            fecha_nacimiento DATE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `;
+
+    try {
+        await db.query(query);
+        console.log('Tabla clientes verificada o creada correctamente');
+    } catch (error) {
+        console.error('Error al verificar/crear la tabla clientes:', error);
+    }
+};
+
+createClientTable();
+
 const ClientModel = {
     addClient: (data, callback) => {
         const query = `
@@ -55,9 +79,18 @@ const ClientModel = {
             likeSearchTerm, 
             likeSearchTerm
         ], callback);
+    },
+    
+    getClientsPaginated: (limit, offset, callback) => {
+        const query = `
+            SELECT * FROM clientes
+            LIMIT ? OFFSET ?
+        `;
+        db.query(query, [limit, offset], callback);
     }
 };
 
 module.exports = ClientModel;
+
 
 

@@ -32,6 +32,19 @@ const ClientService = {
                 resolve(results);
             });
         });
+    },
+
+    getClientsPaginated: (page) => {
+        return new Promise((resolve, reject) => {
+            const limit = 5;  // 5 clientes por página
+            const offset = (page - 1) * limit;  // Calcular el offset
+            ClientModel.getClientsPaginated(limit, offset, (err, results) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(results);
+            });
+        });
     }
 };
 
