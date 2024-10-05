@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const UserModel = require('../models/userModel');
 const jwt = require('jsonwebtoken');
+const db = require('../config/database'); 
 
 const UserService = {
   createUser: async (userData) => {
@@ -98,19 +99,30 @@ const UserService = {
 
   updateUser: async (userId, updatedData) => {
     return new Promise((resolve, reject) => {
-      UserModel.update(userId, updatedData, (err, results) => {
+      const sqlUpdate = 'UPDATE users SET name = ?, last_name = ?, email = ?, profile_picture = ? WHERE id = ?';
+      const paramsUpdate = [updatedData.name, updatedData.last_name, updatedData.email, updatedData.profile_picture, userId];
+
+      db.query(sqlUpdate, paramsUpdate, (err, results) => {
         if (err) {
-          reject('Error al actualizar el usuario');
-        } else {
-          resolve(results);
+          return reject('Error al actualizar el usuario: ' + err);
         }
+
+        // Después de actualizar, busca el usuario actualizado
+        UserModel.findById(userId, (err, updatedUser) => {
+          if (err) {
+            return reject('Error al recuperar el usuario actualizado: ' + err);
+          }
+
+          resolve(updatedUser); // Devuelve el usuario actualizado
+        });
       });
     });
-  },  
-  
+  },
+
 };
 
 module.exports = UserService;
+
 
 
 

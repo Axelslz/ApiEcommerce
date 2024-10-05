@@ -1,18 +1,19 @@
 const db = require('../config/database');
 
-const Client = {
+const ClientModel = {
     addClient: (data, callback) => {
         const query = `
             INSERT INTO clientes (nombre, apellidos, telefono, contacto_emergencia, correo, fecha_nacimiento) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?)
         `;
+        
         db.query(query, [
             data.nombre,
             data.apellidos,
             data.telefono,
             data.contacto_emergencia,
             data.correo,
-            data.fecha_nacimiento,
+            data.fecha_nacimiento
         ], callback);
     },
 
@@ -28,6 +29,7 @@ const Client = {
                 updated_at = CURRENT_TIMESTAMP 
             WHERE id = ?
         `;
+        
         db.query(query, [
             data.nombre,
             data.apellidos,
@@ -56,5 +58,6 @@ const Client = {
     }
 };
 
-module.exports = Client;
+module.exports = ClientModel;
+
 

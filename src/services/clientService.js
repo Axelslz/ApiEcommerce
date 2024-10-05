@@ -1,9 +1,9 @@
-const Client = require('../models/clientModel');
+const ClientModel = require('../models/clientModel');
 
 const ClientService = {
     addClient: (data) => {
         return new Promise((resolve, reject) => {
-            Client.addClient(data, (err, result) => {
+            ClientModel.addClient(data, (err, result) => { 
                 if (err) {
                     return reject(err);
                 }
@@ -14,7 +14,7 @@ const ClientService = {
 
     updateClient: (id, data) => {
         return new Promise((resolve, reject) => {
-            Client.updateClient(id, data, (err, result) => {
+            ClientModel.updateClient(id, data, (err, result) => {  
                 if (err) {
                     return reject(err);
                 }
@@ -25,7 +25,7 @@ const ClientService = {
 
     searchClients: (query) => {
         return new Promise((resolve, reject) => {
-            Client.searchClients(query, (err, results) => {  // Cambiar aquí
+            ClientModel.searchClients(query, (err, results) => {  
                 if (err) {
                     return reject(err);
                 }
@@ -36,6 +36,7 @@ const ClientService = {
 };
 
 module.exports = ClientService;
+
 
 
 

@@ -15,7 +15,8 @@ exports.agregarPoliza = async (req, res) => {
         const result = await PolizaService.agregarPoliza(nuevaPoliza);
         
         res.status(201).json({
-            message: 'Póliza agregada'
+            message: 'Póliza agregada',
+            id: result.insertId // Asegúrate de que esto se reciba correctamente
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -46,7 +47,7 @@ exports.eliminarPoliza = async (req, res) => {
 exports.obtenerPolizaPorId = async (req, res) => {
     try {
         const { id } = req.params;
-        const poliza = await PolizaService.obtenerPolizaPorId(id); // Asegúrate de que este método exista en PolizaService
+        const poliza = await PolizaService.obtenerPolizaPorId(id);
         if (!poliza) {
             return res.status(404).json({ message: 'Póliza no encontrada' });
         }
