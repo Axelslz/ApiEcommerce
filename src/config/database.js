@@ -2,12 +2,12 @@ const mysql = require('mysql');
 require('dotenv').config();
 
 const connection = mysql.createConnection({
-  host: process.env.DB_HOST || 'apiecommerce.railway.internal',
-  user: process.env.DB_USER || 'agent',
-  password: process.env.DB_PASSWORD || 'liteA4231',
-  database: process.env.DB_NAME || 'agentelite',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
   port: process.env.DB_PORT || 3306,
-  flags: '-FOUND_ROWS',
+  connectTimeout: 20000, 
 });
 
 connection.connect((err) => {
