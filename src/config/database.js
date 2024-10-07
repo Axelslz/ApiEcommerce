@@ -2,7 +2,7 @@ const mysql = require('mysql');
 require('dotenv').config();
 
 const connection = mysql.createConnection({
-  host: process.env.DB_HOST || 'apiecommerce-production.up.railway.app',
+  host: process.env.DB_HOST || 'apiecommerce.railway.internal',
   user: process.env.DB_USER || 'agent',
   password: process.env.DB_PASSWORD || 'liteA4231',
   database: process.env.DB_NAME || 'agentelite',
