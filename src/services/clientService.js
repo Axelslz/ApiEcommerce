@@ -38,11 +38,23 @@ const ClientService = {
         return new Promise((resolve, reject) => {
             const limit = 5;  // 5 clientes por página
             const offset = (page - 1) * limit;  // Calcular el offset
+            
+            // Obtener los clientes paginados
             ClientModel.getClientsPaginated(limit, offset, (err, results) => {
                 if (err) {
                     return reject(err);
                 }
-                resolve(results);
+    
+                // Obtener el total de clientes
+                ClientModel.getTotalClients((err, total) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    
+                    // Calcular el total de páginas
+                    const totalPages = Math.ceil(total / limit);
+                    resolve({ results, totalPages });
+                });
             });
         });
     }

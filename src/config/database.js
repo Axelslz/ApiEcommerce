@@ -1,22 +1,16 @@
 const mysql = require('mysql');
-require('dotenv').config();
 
 const connection = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT || 3306,
-  connectTimeout: 20000, 
+  host: 'localhost',       // Cambiar a localhost para usar XAMPP
+  user: 'root',            // Usuario por defecto de XAMPP
+  password: '',            // Contraseña por defecto (generalmente está vacía)
+  database: 'agentelite',  // Asegúrate de que esta base de datos exista en tu XAMPP
+  port: 3306               // Puerto por defecto de MySQL
 });
 
 connection.connect((err) => {
-  if (err) {
-    console.error('Error connecting to the database:', err);
-    return;
-  }
-  console.log('Successfully connected to the database');
-  connection.end();
+  if (err) throw err;
+  console.log('Connected to the database');
 });
 
 module.exports = connection;

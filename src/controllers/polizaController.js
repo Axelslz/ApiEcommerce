@@ -2,6 +2,7 @@ const PolizaService = require('../services/polizaService');
 
 exports.agregarPoliza = async (req, res) => {
     try {
+        const { cliente_id } = req.params; 
         const nuevaPoliza = {
             tipo_seguro: req.body.tipo_seguro,
             prima_neta: req.body.prima_neta,
@@ -9,14 +10,15 @@ exports.agregarPoliza = async (req, res) => {
             vigencia_de: req.body.vigencia_de,
             vigencia_hasta: req.body.vigencia_hasta,
             periodicidad_pago: req.body.periodicidad_pago,
-            archivo_pdf: req.body.archivo_pdf
+            archivo_pdf: req.body.archivo_pdf,
+            cliente_id: cliente_id 
         };
 
         const result = await PolizaService.agregarPoliza(nuevaPoliza);
         
         res.status(201).json({
             message: 'Póliza agregada',
-            id: result.insertId // Asegúrate de que esto se reciba correctamente
+            id: result.insertId
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -25,7 +27,7 @@ exports.agregarPoliza = async (req, res) => {
 
 exports.editarPoliza = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id, cliente_id } = req.params; 
         const datosActualizados = req.body;
         await PolizaService.editarPoliza(id, datosActualizados);
         res.status(200).json({ message: 'Póliza actualizada' });
@@ -44,14 +46,18 @@ exports.eliminarPoliza = async (req, res) => {
     }
 };
 
-exports.obtenerPolizaPorId = async (req, res) => {
+exports.obtenerPolizasPorCliente = async (req, res) => {
     try {
-        const { id } = req.params;
-        const poliza = await PolizaService.obtenerPolizaPorId(id);
-        if (!poliza) {
-            return res.status(404).json({ message: 'Póliza no encontrada' });
-        }
-        res.status(200).json(poliza);
+        const { cliente_id } = req.params; 
+        const limit = parseInt(req.query.limit) || 5;  
+        const page = parseInt(req.query.page) || 1;  
+        const offset = (page - 1) * limit;
+
+        const polizas = await PolizaService.obtenerPolizasPorCliente(cliente_id, limit, offset);
+        const total = await PolizaService.getTotalPoliciesByCliente(cliente_id);
+        const totalPages = Math.ceil(total / limit);
+
+        res.status(200).json({ polizas, totalPages });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -63,10 +69,23 @@ exports.obtenerTodasPolizas = async (req, res) => {
         const page = parseInt(req.query.page) || 1;  // Página 1 por defecto
         const offset = (page - 1) * limit;
 
-        const polizas = await PolizaService.obtenerTodasPolizas(limit, offset);
-        res.status(200).json(polizas);
+        const { polizas, totalPages } = await PolizaService.obtenerTodasPolizas(limit, offset);
+        res.status(200).json({ polizas, totalPages }); // Respuesta con el formato adecuado
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
+exports.buscarPolizas = async (req, res) => {
+    try {
+        const searchTerm = req.query.search || ''; 
+        const limit = parseInt(req.query.limit) || 5;
+        const page = parseInt(req.query.page) || 1;
+        const offset = (page - 1) * limit;
+
+        const { polizas, totalPages } = await PolizaService.buscarPolizas(searchTerm, limit, offset);
+        res.status(200).json({ polizas, totalPages });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

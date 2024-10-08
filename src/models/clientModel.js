@@ -87,6 +87,14 @@ const ClientModel = {
             LIMIT ? OFFSET ?
         `;
         db.query(query, [limit, offset], callback);
+    },
+
+    getTotalClients: (callback) => {
+        const query = 'SELECT COUNT(*) AS total FROM clientes';
+        db.query(query, (err, results) => {
+            if (err) return callback(err);
+            callback(null, results[0].total);
+        });
     }
 };
 
