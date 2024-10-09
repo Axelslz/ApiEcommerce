@@ -1,5 +1,26 @@
 const db = require('../config/database');
 
+const createNoteTable = async () => {
+    const query = `
+        CREATE TABLE IF NOT EXISTS notas (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            cliente_id INT NOT NULL,
+            contenido TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+        );
+    `;
+
+    try {
+        await db.query(query);
+        console.log('Tabla notas verificada o creada correctamente');
+    } catch (error) {
+        console.error('Error al verificar/crear la tabla notas:', error);
+    }
+};
+
+createNoteTable();
+
 const NoteModel = {
     addNote: (clienteId, contenido, callback) => {
         const query = `INSERT INTO notas (cliente_id, contenido) VALUES (?, ?)`;
