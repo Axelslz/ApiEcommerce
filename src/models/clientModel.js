@@ -95,7 +95,38 @@ const ClientModel = {
             if (err) return callback(err);
             callback(null, results[0].total);
         });
-    }
+    }, 
+    getClientById: (id, callback) => {
+        const query = `
+            SELECT id, nombre, apellidos, telefono, contacto_emergencia, correo, fecha_nacimiento
+            FROM clientes
+            WHERE id = ?
+        `;
+        db.query(query, [id], (err, results) => {
+            if (err) return callback(err);
+            callback(null, results[0]);  
+        });
+    },
+    searchClientsMassive: (searchTerm, limit, offset, callback) => {
+        const query = `
+            SELECT * FROM clientes
+            WHERE nombre LIKE ? OR apellidos LIKE ? OR telefono LIKE ? 
+            OR contacto_emergencia LIKE ? OR correo LIKE ? OR fecha_nacimiento LIKE ?
+            LIMIT ? OFFSET ?
+        `;
+        const likeSearchTerm = `%${searchTerm}%`;
+        db.query(query, [
+            likeSearchTerm, 
+            likeSearchTerm, 
+            likeSearchTerm, 
+            likeSearchTerm, 
+            likeSearchTerm, 
+            likeSearchTerm,
+            limit, 
+            offset
+        ], callback);
+    },
+    
 };
 
 module.exports = ClientModel;

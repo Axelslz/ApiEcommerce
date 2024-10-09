@@ -1,11 +1,11 @@
 const mysql = require('mysql');
 
 const connection = mysql.createConnection({
-  host: 'localhost',       // Cambiar a localhost para usar XAMPP
-  user: 'root',            // Usuario por defecto de XAMPP
-  password: '',            // Contraseña por defecto (generalmente está vacía)
-  database: 'agentelite',  // Asegúrate de que esta base de datos exista en tu XAMPP
-  port: 3306               // Puerto por defecto de MySQL
+  host: 'localhost',       
+  user: 'root',            
+  password: '',            
+  database: 'agentelite',  
+  port: 3306              
 });
 
 connection.connect((err) => {

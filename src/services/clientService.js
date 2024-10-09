@@ -23,41 +23,72 @@ const ClientService = {
         });
     },
 
-    searchClients: (query) => {
+    searchClients: (searchTerm, page) => {
         return new Promise((resolve, reject) => {
-            ClientModel.searchClients(query, (err, results) => {  
+            const limit = 5; 
+            const offset = (page - 1) * limit; 
+            
+            ClientModel.searchClients(searchTerm, (err, results) => { 
                 if (err) {
                     return reject(err);
                 }
-                resolve(results);
+                ClientModel.getTotalClients((err, total) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve({ clients: results, totalItems: total });
+                });
             });
         });
     },
 
     getClientsPaginated: (page) => {
         return new Promise((resolve, reject) => {
-            const limit = 5;  // 5 clientes por página
-            const offset = (page - 1) * limit;  // Calcular el offset
-            
-            // Obtener los clientes paginados
+            const limit = 5;  
+            const offset = (page - 1) * limit;  
             ClientModel.getClientsPaginated(limit, offset, (err, results) => {
                 if (err) {
                     return reject(err);
                 }
-    
-                // Obtener el total de clientes
                 ClientModel.getTotalClients((err, total) => {
                     if (err) {
                         return reject(err);
                     }
-                    
-                    // Calcular el total de páginas
                     const totalPages = Math.ceil(total / limit);
                     resolve({ results, totalPages });
                 });
             });
         });
-    }
+    },
+
+    getClientById: (id) => {
+        return new Promise((resolve, reject) => {
+            ClientModel.getClientById(id, (err, result) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(result);
+            });
+        });
+    },
+    
+    searchClientsMassive: (searchTerm, page, limit) => {
+        return new Promise((resolve, reject) => {
+            const offset = (page - 1) * limit;
+            ClientModel.searchClientsMassive(searchTerm, limit, offset, (err, results) => {
+                if (err) {
+                    return reject(err);
+                }
+                ClientModel.getTotalClients((err, total) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve({ clients: results, totalItems: total });
+                });
+            });
+        });
+    },
+    
 };
 
 module.exports = ClientService;

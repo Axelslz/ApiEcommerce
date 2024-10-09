@@ -37,11 +37,17 @@ class PolizaService {
         });
     }
 
-    static searchPolicies(query) {
+    static buscarPolizas(searchTerm, page, limit) {
         return new Promise((resolve, reject) => {
-            Poliza.searchPolicies(query, (err, result) => {
+            const offset = (page - 1) * limit; 
+            Poliza.searchPolicies(searchTerm, limit, offset, (err, results) => {
                 if (err) return reject(err);
-                resolve(result);
+
+                Poliza.getTotalFilteredPolicies(searchTerm, (err, total) => {
+                    if (err) return reject(err);
+                    const totalPages = Math.ceil(total / limit);
+                    resolve({ policies: results, totalItems: total });
+                });
             });
         });
     }
@@ -50,14 +56,11 @@ class PolizaService {
         return new Promise((resolve, reject) => {
             Poliza.getAllPolicies(limit, offset, (err, results) => {
                 if (err) return reject(err);
-                
-                // Obtener el total de pólizas
+
                 Poliza.getTotalPolicies((err, total) => {
                     if (err) return reject(err);
-                    
-                    // Calcular el total de páginas
                     const totalPages = Math.ceil(total / limit);
-                    resolve({ polizas: results, totalPages }); // Cambia el nombre de la propiedad a "polizas"
+                    resolve({ polizas: results, totalPages });
                 });
             });
         });
@@ -74,51 +77,37 @@ class PolizaService {
 
     static getTotalPoliciesByCliente(cliente_id) {
         return new Promise((resolve, reject) => {
-            Poliza.getTotalPoliciesByCliente(cliente_id, (err, total) => {
+            Poliza.getTotalPoliciesByCliente(cliente_id, (err, result) => {
                 if (err) return reject(err);
-                resolve(total);
+                resolve(result);
             });
         });
     }
 
-    static getTotalPolicies() {
+    static buscarPolizas(searchTerm, page, limit) {
         return new Promise((resolve, reject) => {
-            Poliza.getTotalPolicies((err, total) => {
+            const offset = (page - 1) * limit; 
+            Poliza.searchPolicies(searchTerm, limit, offset, (err, results) => {
                 if (err) return reject(err);
-                resolve(total);
-            });
-        });
-    }
 
-    static async getPoliciesPaginated(limit, offset) {
-        return new Promise((resolve, reject) => {
-            Poliza.getPoliciesPaginated(limit, offset, (err, results) => {
-                if (err) return reject(err);
-                
-                // Obtener el total de pólizas
-                Poliza.getTotalPolicies((err, total) => {
+                Poliza.getTotalFilteredPolicies(searchTerm, (err, total) => {
                     if (err) return reject(err);
-                    
-                    // Calcular el total de páginas
                     const totalPages = Math.ceil(total / limit);
-                    resolve({ polizas: results, totalPages });
+                    resolve({ policies: results, totalItems: total, totalPages });
                 });
             });
         });
     }
 
-    static async buscarPolizas(searchTerm, limit, offset) {
+    static buscarPolizasMasivas(searchTerm, page, limit) {
         return new Promise((resolve, reject) => {
-            Poliza.searchPolicies(searchTerm, limit, offset, (err, results) => {
+            const offset = (page - 1) * limit;
+            Poliza.searchPoliciesMassive(searchTerm, limit, offset, (err, results) => {
                 if (err) return reject(err);
 
-                // Obtener el total de pólizas que cumplen con el término de búsqueda
-                Poliza.getTotalFilteredPolicies({ searchTerm }, (err, total) => {
+                Poliza.getTotalFilteredPolicies(searchTerm, (err, total) => {
                     if (err) return reject(err);
-
-                    // Calcular el total de páginas
-                    const totalPages = Math.ceil(total / limit);
-                    resolve({ polizas: results, totalPages });
+                    resolve({ policies: results, totalItems: total });
                 });
             });
         });
@@ -127,5 +116,6 @@ class PolizaService {
 }
 
 module.exports = PolizaService;
+
 
 

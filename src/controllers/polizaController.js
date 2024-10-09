@@ -65,12 +65,12 @@ exports.obtenerPolizasPorCliente = async (req, res) => {
 
 exports.obtenerTodasPolizas = async (req, res) => {
     try {
-        const limit = parseInt(req.query.limit) || 5;  // Limitar a 5 por defecto
-        const page = parseInt(req.query.page) || 1;  // Página 1 por defecto
+        const limit = parseInt(req.query.limit) || 5;  
+        const page = parseInt(req.query.page) || 1;  
         const offset = (page - 1) * limit;
 
         const { polizas, totalPages } = await PolizaService.obtenerTodasPolizas(limit, offset);
-        res.status(200).json({ polizas, totalPages }); // Respuesta con el formato adecuado
+        res.status(200).json({ polizas, totalPages }); 
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
