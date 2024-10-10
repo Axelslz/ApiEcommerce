@@ -23,16 +23,16 @@ const ClientService = {
         });
     },
 
-    searchClients: (searchTerm, page) => {
+    searchClients: (searchTerm, user_id, page) => { // Añadimos user_id aquí
         return new Promise((resolve, reject) => {
             const limit = 5; 
             const offset = (page - 1) * limit; 
             
-            ClientModel.searchClients(searchTerm, (err, results) => { 
+            ClientModel.searchClients(searchTerm, user_id, (err, results) => { // Añadimos user_id aquí
                 if (err) {
                     return reject(err);
                 }
-                ClientModel.getTotalClients((err, total) => {
+                ClientModel.getTotalClients(user_id, (err, total) => {  // Añadimos user_id aquí
                     if (err) {
                         return reject(err);
                     }
@@ -42,15 +42,15 @@ const ClientService = {
         });
     },
 
-    getClientsPaginated: (page) => {
+    getClientsPaginated: (user_id, page) => { // Añadimos user_id aquí
         return new Promise((resolve, reject) => {
             const limit = 5;  
             const offset = (page - 1) * limit;  
-            ClientModel.getClientsPaginated(limit, offset, (err, results) => {
+            ClientModel.getClientsPaginated(user_id, limit, offset, (err, results) => { // Añadimos user_id aquí
                 if (err) {
                     return reject(err);
                 }
-                ClientModel.getTotalClients((err, total) => {
+                ClientModel.getTotalClients(user_id, (err, total) => {  // Añadimos user_id aquí
                     if (err) {
                         return reject(err);
                     }
@@ -61,9 +61,9 @@ const ClientService = {
         });
     },
 
-    getClientById: (id) => {
+    getClientById: (user_id, id) => { // Añadimos user_id aquí
         return new Promise((resolve, reject) => {
-            ClientModel.getClientById(id, (err, result) => {
+            ClientModel.getClientById(user_id, id, (err, result) => {  // Añadimos user_id aquí
                 if (err) {
                     return reject(err);
                 }
@@ -72,14 +72,14 @@ const ClientService = {
         });
     },
     
-    searchClientsMassive: (searchTerm, page, limit) => {
+    searchClientsMassive: (searchTerm, user_id, page, limit) => { // Añadimos user_id aquí
         return new Promise((resolve, reject) => {
             const offset = (page - 1) * limit;
-            ClientModel.searchClientsMassive(searchTerm, limit, offset, (err, results) => {
+            ClientModel.searchClientsMassive(searchTerm, user_id, limit, offset, (err, results) => { // Añadimos user_id aquí
                 if (err) {
                     return reject(err);
                 }
-                ClientModel.getTotalClients((err, total) => {
+                ClientModel.getTotalClients(user_id, (err, total) => {  // Añadimos user_id aquí
                     if (err) {
                         return reject(err);
                     }
@@ -88,10 +88,10 @@ const ClientService = {
             });
         });
     },
-    
 };
 
 module.exports = ClientService;
+
 
 
 

@@ -10,7 +10,9 @@ const createClientTable = async () => {
             contacto_emergencia VARCHAR(20),
             correo VARCHAR(255) NOT NULL UNIQUE,
             fecha_nacimiento DATE,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            user_id INT NOT NULL,  -- Nueva columna para almacenar el ID del usuario
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) -- Relación con la tabla users
         );
     `;
 
@@ -27,17 +29,17 @@ createClientTable();
 const ClientModel = {
     addClient: (data, callback) => {
         const query = `
-            INSERT INTO clientes (nombre, apellidos, telefono, contacto_emergencia, correo, fecha_nacimiento) 
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO clientes (nombre, apellidos, telefono, contacto_emergencia, correo, fecha_nacimiento, user_id) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         `;
-        
         db.query(query, [
             data.nombre,
             data.apellidos,
             data.telefono,
             data.contacto_emergencia,
             data.correo,
-            data.fecha_nacimiento
+            data.fecha_nacimiento,
+            data.user_id,  
         ], callback);
     },
 

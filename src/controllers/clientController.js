@@ -4,8 +4,9 @@ const { calcularEdad } = require('../utils/calcularEdad');
 exports.addClient = async (req, res) => {
   try {
       const data = req.body;
-      console.log("Datos recibidos:", data); 
+      const userId = req.user.id; 
       data.edad = calcularEdad(data.fecha_nacimiento);
+      data.user_id = userId;
       const result = await clientService.addClient(data);
       res.status(201).json({ message: 'Cliente agregado exitosamente', id: result.insertId });
   } catch (error) {
