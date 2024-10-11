@@ -2,11 +2,15 @@ const express = require('express');
 const router = express.Router();
 const polizaController = require('../controllers/polizaController');
 
-router.post('/:cliente_id', polizaController.agregarPoliza); 
-router.put('/editar/:id/:cliente_id', polizaController.editarPoliza); 
-router.delete('/eliminar/:id', polizaController.eliminarPoliza); 
-router.get('/cliente/:cliente_id', polizaController.obtenerPolizasPorCliente); 
-router.get('/todas', polizaController.obtenerTodasPolizas); 
-router.get('/buscar', polizaController.buscarPolizas);
+
+router.post('/clientes/:cliente_id/polizas', polizaController.agregarPoliza);
+router.get('/polizas/:id', polizaController.obtenerPolizaPorId);
+router.put('/clientes/:cliente_id/polizas/:id', polizaController.editarPoliza);
+router.delete('/clientes/:cliente_id/polizas/:id', polizaController.eliminarPoliza);
+router.get('/polizas', polizaController.obtenerTodasPolizas);
+router.get('/clientes/:cliente_id/polizas', polizaController.obtenerPolizasPorCliente);
+router.get('/clientes/:cliente_id/polizas/buscar', polizaController.buscarPolizas);
+router.get('/clientes/:cliente_id/polizas/total', polizaController.getTotalPoliciesByCliente);
+router.get('/polizas/total', polizaController.getTotalPolicies);
 
 module.exports = router;

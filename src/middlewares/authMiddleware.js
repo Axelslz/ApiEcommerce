@@ -1,14 +1,14 @@
-const { verifyToken } = require('../config/jwt');
+const jwt = require('jsonwebtoken');
 
 const authMiddleware = (req, res, next) => {
-  const token = req.headers['authorization'];
+  const token = req.header('Authorization')?.split(' ')[1];
   if (!token) {
-    return res.status(401).json({ message: 'Authorization token required' });
+    return res.status(401).json({ message: 'No token provided' });
   }
 
   try {
-    const decoded = verifyToken(token.split(' ')[1]);
-    req.user = decoded;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);  // Usa la clave secreta de .env
+    req.user = decoded;  // Almacena el usuario decodificado en la solicitud
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Invalid or expired token' });
@@ -16,3 +16,4 @@ const authMiddleware = (req, res, next) => {
 };
 
 module.exports = authMiddleware;
+

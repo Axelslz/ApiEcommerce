@@ -41,8 +41,12 @@ module.exports = {
         db.query(query, [id], callback);
     },
     obtenerPolizaPorId: (id, callback) => {
-        const query = 'SELECT * FROM polizas WHERE id = ?';
-        db.query(query, id, callback);
+        const sql = 'SELECT * FROM polizas WHERE id = ?';
+        db.query(sql, [id], (err, results) => {
+            if (err) return callback(err);
+            // Asegúrate de que estás obteniendo el primer resultado
+            callback(null, results[0]); // Cambiar aquí si es necesario
+        });
     },
     searchPolicies: (query, limit, offset, callback) => {
         const sql = `SELECT * FROM polizas WHERE tipo_seguro LIKE ? OR asegurado LIKE ? LIMIT ? OFFSET ?`;
@@ -75,6 +79,7 @@ module.exports = {
             callback(null, results[0].total);
         });
     },
+    
 
     getTotalPolicies: (callback) => {
         const query = 'SELECT COUNT(*) AS total FROM polizas';

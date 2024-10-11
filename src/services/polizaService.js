@@ -1,4 +1,5 @@
 const Poliza = require('../models/polizaModel');
+const ClientModel = require('../models/clientModel');
 
 class PolizaService {
     static agregarPoliza(data) {
@@ -10,11 +11,33 @@ class PolizaService {
         });
     }
 
-    static editarPoliza(id, data) {
+    static async editarPoliza(id, cliente_id, data) {
         return new Promise((resolve, reject) => {
-            Poliza.editarPoliza(id, data, (err) => {
+            Poliza.obtenerPolizaPorId(id, (err, poliza) => {
                 if (err) return reject(err);
-                resolve();
+                if (!poliza) {
+                    return reject(new Error('No se encontró la póliza con el ID especificado.'));
+                }
+    
+                const polizaClienteId = poliza.cliente_id; // Mantenemos como está para verificar después
+                const inputClienteId = parseInt(cliente_id, 10);
+    
+                if (!polizaClienteId) {
+                    return reject(new Error('El cliente_id de la póliza no es válido.'));
+                }
+    
+                const polizaClienteIdParsed = parseInt(polizaClienteId, 10); // Convertir aquí
+    
+                console.log(`Comparando cliente_id: poliza(${polizaClienteIdParsed}) vs entrada(${inputClienteId})`); // Logging para depuración
+    
+                if (polizaClienteIdParsed !== inputClienteId) {
+                    return reject(new Error('Esta póliza no pertenece al cliente especificado.'));
+                }
+                
+                Poliza.editarPoliza(id, data, (err) => {
+                    if (err) return reject(err);
+                    resolve();
+                });
             });
         });
     }
@@ -37,16 +60,24 @@ class PolizaService {
         });
     }
 
-    static buscarPolizas(searchTerm, page, limit) {
+    static async buscarPolizasPorCliente(cliente_id, searchTerm, limit, offset) {
+        // Verificar si el cliente existe
+        const cliente = await ClientModel.obtenerClientePorId(cliente_id);
+        if (!cliente) {
+            throw new Error('El cliente especificado no existe.');
+        }
+
         return new Promise((resolve, reject) => {
-            const offset = (page - 1) * limit; 
-            Poliza.searchPolicies(searchTerm, limit, offset, (err, results) => {
+            const sql = `SELECT * FROM polizas WHERE cliente_id = ? AND (tipo_seguro LIKE ? OR asegurado LIKE ?) LIMIT ? OFFSET ?`;
+            const searchTermFormatted = `%${searchTerm}%`;
+
+            Poliza.db.query(sql, [cliente_id, searchTermFormatted, searchTermFormatted, limit, offset], (err, results) => {
                 if (err) return reject(err);
 
-                Poliza.getTotalFilteredPolicies(searchTerm, (err, total) => {
+                Poliza.getTotalFilteredPolicies(searchTermFormatted, (err, total) => {
                     if (err) return reject(err);
                     const totalPages = Math.ceil(total / limit);
-                    resolve({ policies: results, totalItems: total });
+                    resolve({ policies: results, totalPages });
                 });
             });
         });
@@ -65,57 +96,29 @@ class PolizaService {
             });
         });
     }
-
     static obtenerPolizasPorCliente(cliente_id, limit, offset) {
         return new Promise((resolve, reject) => {
-            Poliza.obtenerPolizasPorCliente(cliente_id, limit, offset, (err, result) => {
+            Poliza.obtenerPolizasPorCliente(cliente_id, limit, offset, (err, results) => {
                 if (err) return reject(err);
-                resolve(result);
+                resolve(results);
             });
         });
     }
 
     static getTotalPoliciesByCliente(cliente_id) {
         return new Promise((resolve, reject) => {
-            Poliza.getTotalPoliciesByCliente(cliente_id, (err, result) => {
+            Poliza.getTotalPoliciesByCliente(cliente_id, (err, total) => {
                 if (err) return reject(err);
-                resolve(result);
+                resolve(total);
             });
         });
     }
-
-    static buscarPolizas(searchTerm, page, limit) {
-        return new Promise((resolve, reject) => {
-            const offset = (page - 1) * limit; 
-            Poliza.searchPolicies(searchTerm, limit, offset, (err, results) => {
-                if (err) return reject(err);
-
-                Poliza.getTotalFilteredPolicies(searchTerm, (err, total) => {
-                    if (err) return reject(err);
-                    const totalPages = Math.ceil(total / limit);
-                    resolve({ policies: results, totalItems: total, totalPages });
-                });
-            });
-        });
-    }
-
-    static buscarPolizasMasivas(searchTerm, page, limit) {
-        return new Promise((resolve, reject) => {
-            const offset = (page - 1) * limit;
-            Poliza.searchPoliciesMassive(searchTerm, limit, offset, (err, results) => {
-                if (err) return reject(err);
-
-                Poliza.getTotalFilteredPolicies(searchTerm, (err, total) => {
-                    if (err) return reject(err);
-                    resolve({ policies: results, totalItems: total });
-                });
-            });
-        });
-    }
-
+    
 }
 
 module.exports = PolizaService;
+
+
 
 
 
