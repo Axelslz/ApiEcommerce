@@ -19,14 +19,14 @@ class PolizaService {
                     return reject(new Error('No se encontró la póliza con el ID especificado.'));
                 }
     
-                const polizaClienteId = poliza.cliente_id; // Mantenemos como está para verificar después
+                const polizaClienteId = poliza.cliente_id; 
                 const inputClienteId = parseInt(cliente_id, 10);
     
                 if (!polizaClienteId) {
                     return reject(new Error('El cliente_id de la póliza no es válido.'));
                 }
     
-                const polizaClienteIdParsed = parseInt(polizaClienteId, 10); // Convertir aquí
+                const polizaClienteIdParsed = parseInt(polizaClienteId, 10); 
     
                 console.log(`Comparando cliente_id: poliza(${polizaClienteIdParsed}) vs entrada(${inputClienteId})`); // Logging para depuración
     
@@ -61,7 +61,7 @@ class PolizaService {
     }
 
     static async buscarPolizasPorCliente(cliente_id, searchTerm, limit, offset) {
-        // Verificar si el cliente existe
+        
         const cliente = await ClientModel.obtenerClientePorId(cliente_id);
         if (!cliente) {
             throw new Error('El cliente especificado no existe.');
@@ -117,6 +117,11 @@ class PolizaService {
 }
 
 module.exports = PolizaService;
+
+
+
+
+
 
 
 

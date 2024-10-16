@@ -13,4 +13,5 @@ router.get('/clientes/:cliente_id/polizas/buscar', polizaController.buscarPoliza
 router.get('/clientes/:cliente_id/polizas/total', polizaController.getTotalPoliciesByCliente);
 router.get('/polizas/total', polizaController.getTotalPolicies);
 
+
 module.exports = router;

@@ -44,8 +44,7 @@ module.exports = {
         const sql = 'SELECT * FROM polizas WHERE id = ?';
         db.query(sql, [id], (err, results) => {
             if (err) return callback(err);
-            // Asegúrate de que estás obteniendo el primer resultado
-            callback(null, results[0]); // Cambiar aquí si es necesario
+            callback(null, results[0]); 
         });
     },
     searchPolicies: (query, limit, offset, callback) => {
@@ -105,6 +104,16 @@ module.exports = {
             callback(null, results);
         });
     },
+    getPolicyByClientId: (clientId) => {
+        const query = 'SELECT * FROM polizas WHERE client_id = ?';
+        return new Promise((resolve, reject) => {
+            db.query(query, [clientId], (err, results) => {
+                if (err) return reject(err);
+                if (results.length === 0) return resolve(null);
+                resolve(results[0]);
+            });
+        });
+    }
 
 
 };

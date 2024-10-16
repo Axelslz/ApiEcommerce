@@ -105,8 +105,8 @@ const ClientModel = {
             const sql = 'SELECT * FROM clientes WHERE id = ?';
             db.query(sql, [id], (err, results) => {
                 if (err) return reject(err);
-                if (results.length === 0) return resolve(null); // No se encontró el cliente
-                resolve(results[0]); // Retorna el cliente encontrado
+                if (results.length === 0) return resolve(null); 
+                resolve(results[0]); 
             });
         });
     }, 

@@ -7,8 +7,8 @@ const authMiddleware = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);  // Usa la clave secreta de .env
-    req.user = decoded;  // Almacena el usuario decodificado en la solicitud
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); 
+    req.user = decoded; 
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Invalid or expired token' });

@@ -99,25 +99,33 @@ const UserService = {
 
   updateUser: async (userId, updatedData) => {
     return new Promise((resolve, reject) => {
-      const sqlUpdate = 'UPDATE users SET name = ?, last_name = ?, email = ?, profile_picture = ? WHERE id = ?';
-      const paramsUpdate = [updatedData.name, updatedData.last_name, updatedData.email, updatedData.profile_picture, userId];
-
-      db.query(sqlUpdate, paramsUpdate, (err, results) => {
+      UserModel.findById(userId, (err, currentUser) => {
         if (err) {
-          return reject('Error al actualizar el usuario: ' + err);
+          return reject('Error al recuperar el usuario actual: ' + err);
         }
 
-        // Después de actualizar, busca el usuario actualizado
-        UserModel.findById(userId, (err, updatedUser) => {
+        const profile_picture = updatedData.profile_picture || currentUser.profile_picture;
+  
+        const sqlUpdate = 'UPDATE users SET name = ?, last_name = ?, email = ?, profile_picture = ? WHERE id = ?';
+        const paramsUpdate = [updatedData.name, updatedData.last_name, updatedData.email, profile_picture, userId];
+  
+        db.query(sqlUpdate, paramsUpdate, (err, results) => {
           if (err) {
-            return reject('Error al recuperar el usuario actualizado: ' + err);
+            return reject('Error al actualizar el usuario: ' + err);
           }
 
-          resolve(updatedUser); // Devuelve el usuario actualizado
+          UserModel.findById(userId, (err, updatedUser) => {
+            if (err) {
+              return reject('Error al recuperar el usuario actualizado: ' + err);
+            }
+  
+            resolve(updatedUser); 
+          });
         });
       });
     });
   },
+  
 
 };
 

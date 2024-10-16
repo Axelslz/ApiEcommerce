@@ -1,8 +1,9 @@
 const PolizaService = require('../services/polizaService');
+const PagoService = require('../services/pagoService');
 
 exports.agregarPoliza = async (req, res) => {
     try {
-        const { cliente_id } = req.params; 
+        const { cliente_id } = req.params;
         const nuevaPoliza = {
             tipo_seguro: req.body.tipo_seguro,
             prima_neta: req.body.prima_neta,
@@ -11,13 +12,16 @@ exports.agregarPoliza = async (req, res) => {
             vigencia_hasta: req.body.vigencia_hasta,
             periodicidad_pago: req.body.periodicidad_pago,
             archivo_pdf: req.body.archivo_pdf,
-            cliente_id: cliente_id 
+            cliente_id: cliente_id
         };
 
         const result = await PolizaService.agregarPoliza(nuevaPoliza);
-        
+        const polizaCreada = { ...nuevaPoliza, id: result.insertId };
+
+        await PagoService.generarPagos(polizaCreada);
+
         res.status(201).json({
-            message: 'Póliza agregada',
+            message: 'Póliza agregada correctamente',
             id: result.insertId
         });
     } catch (err) {
@@ -27,10 +31,11 @@ exports.agregarPoliza = async (req, res) => {
 
 exports.editarPoliza = async (req, res) => {
     try {
-        const { id, cliente_id } = req.params; 
+        const { id, cliente_id } = req.params;
         const datosActualizados = req.body;
+
         await PolizaService.editarPoliza(id, cliente_id, datosActualizados);
-        res.status(200).json({ message: 'Póliza actualizada' });
+        res.status(200).json({ message: 'Póliza actualizada correctamente' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -38,15 +43,15 @@ exports.editarPoliza = async (req, res) => {
 
 exports.eliminarPoliza = async (req, res) => {
     try {
-        const { id, cliente_id } = req.params; 
-        const poliza = await PolizaService.obtenerPolizaPorId(id);
+        const { id, cliente_id } = req.params;
 
+        const poliza = await PolizaService.obtenerPolizaPorId(id);
         if (poliza.cliente_id !== parseInt(cliente_id)) {
             return res.status(403).json({ message: 'No autorizado para eliminar esta póliza.' });
         }
 
         await PolizaService.eliminarPoliza(id);
-        res.status(200).json({ message: 'Póliza eliminada' });
+        res.status(200).json({ message: 'Póliza eliminada correctamente' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -82,12 +87,12 @@ exports.obtenerTodasPolizas = async (req, res) => {
 
 exports.obtenerPolizasPorCliente = async (req, res) => {
     try {
-        const { cliente_id } = req.params; 
-        const limit = parseInt(req.query.limit) || 5;  
-        const page = parseInt(req.query.page) || 1;  
+        const { cliente_id } = req.params;
+        const limit = parseInt(req.query.limit) || 5;
+        const page = parseInt(req.query.page) || 1;
         const offset = (page - 1) * limit;
 
-        const polizas = await PolizaService.obtenerPolizasPorCliente(cliente_id, limit, offset); // Verifica que sea correcto
+        const polizas = await PolizaService.obtenerPolizasPorCliente(cliente_id, limit, offset);
         const total = await PolizaService.getTotalPoliciesByCliente(cliente_id);
         const totalPages = Math.ceil(total / limit);
 
@@ -97,17 +102,12 @@ exports.obtenerPolizasPorCliente = async (req, res) => {
     }
 };
 
-
 exports.buscarPolizas = async (req, res) => {
     try {
-        const { cliente_id } = req.params; 
-        const searchTerm = req.query.search || ''; 
-        const limit = parseInt(req.query.limit) || 5;
-        const page = parseInt(req.query.page) || 1;
-        const offset = (page - 1) * limit;
-
-        const { policies, totalPages } = await PolizaService.buscarPolizasPorCliente(cliente_id, searchTerm, limit, offset);
-        res.status(200).json({ policies, totalPages });
+        const { cliente_id } = req.params;
+        const { query } = req.query; // Por ejemplo, lo que buscas
+        const polizas = await PolizaService.buscarPolizas(cliente_id, query); 
+        res.status(200).json(polizas);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -125,7 +125,7 @@ exports.getTotalPoliciesByCliente = async (req, res) => {
 
 exports.getTotalPolicies = async (req, res) => {
     try {
-        const total = await PolizaService.getTotalPolicies();
+        const total = await PolizaService.getTotalPolicies(); 
         res.status(200).json({ total });
     } catch (err) {
         res.status(500).json({ error: err.message });

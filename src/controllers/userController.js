@@ -2,6 +2,7 @@ const UserService = require('../services/userService');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
+const {cloudinary} = require('../config/cloudinary');
 
 const generatePasswordResetToken = (userId) => {
   const secret = process.env.JWT_SECRET;
@@ -34,17 +35,19 @@ const sendPasswordResetEmail = async (email, token) => {
 
 const UserController = {
   register: (req, res) => {
-    const { name, last_name, email, password, profile_picture } = req.body;
-    const userData = { name, last_name, email, password, profile_picture };
+    const { name, last_name, email, password } = req.body;
+    const userData = { name, last_name, email, password, profile_picture: null }; // Sin imagen
+  
     UserService.createUser(userData)
       .then(() => {
-          res.status(201).json({ message: `Bienvenido, ${name} ${last_name}! Registro Exitoso.` });
+        res.status(201).json({ message: `Bienvenido, ${name} ${last_name}! Registro Exitoso.` });
       })
       .catch((error) => {
-          res.status(500).json({ message: error });
+        res.status(500).json({ message: error });
       });
   },
-
+  
+  
   login: async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -96,24 +99,37 @@ const UserController = {
     const updatedData = req.body;
   
     try {
-      const result = await UserService.updateUser(userId, updatedData);
-      const token = jwt.sign({ id: result.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
+      if (req.file) {
+        const result = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream({
+            folder: 'UserImg-Agentlite', 
+            resource_type: 'image'
+          }, (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          });
+  
+          if (req.file && req.file.buffer) {
+            uploadStream.end(req.file.buffer);
+          } else {
+            throw new Error("Archivo no encontrado o formato inválido.");
+          }
+        });
+        updatedData.profile_picture = result.secure_url; 
+      }
+  
+      const updatedUser = await UserService.updateUser(userId, updatedData);
       res.status(200).json({
         message: 'Usuario actualizado exitosamente',
-        user: {
-          id: result.id,             
-          name: result.name,
-          last_name: result.last_name,
-          email: result.email,
-        },
-        token: token,
+        user: updatedUser,
       });
     } catch (error) {
       console.error('Error al actualizar el usuario:', error);
       res.status(500).json({ message: `Error al actualizar el usuario: ${error.message || error}` });
     }
   },
+  
 };
 
 module.exports = UserController;

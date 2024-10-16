@@ -48,9 +48,9 @@ const ClientService = {
         }
     },
 
-    getClientById: async (id) => { // No necesitas user_id en esta función
+    getClientById: async (id) => { 
         try {
-            const client = await ClientModel.obtenerClientePorId(id); // Cambiar aquí
+            const client = await ClientModel.obtenerClientePorId(id); 
             return client;
         } catch (error) {
             throw new Error("Error al obtener cliente: " + error.message);

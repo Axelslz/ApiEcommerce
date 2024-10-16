@@ -39,10 +39,10 @@ const UserModel = {
   
   update: (id, userData, callback) => {
     const query = 'UPDATE users SET name = ?, last_name = ?, email = ?, profile_picture = ? WHERE id = ?';
-    console.log("Ejecutando consulta SQL:", query); // Para depurar la consulta
+    console.log("Ejecutando consulta SQL:", query); 
     db.query(query, [userData.name, userData.last_name, userData.email, userData.profile_picture, id], (err, results) => {
       if (err) {
-        console.error('Error en la consulta SQL:', err); // Mostrar el error SQL exacto
+        console.error('Error en la consulta SQL:', err); 
         return callback(err, null); 
       }
       callback(null, results); 
@@ -55,11 +55,10 @@ const UserModel = {
       if (err) {
         return callback(err);
       }
-      // Verifica si hay resultados
       if (results.length > 0) {
-        return callback(null, results[0]); // Devuelve el primer resultado
+        return callback(null, results[0]); 
       } else {
-        return callback(new Error('Usuario no encontrado')); // Maneja el caso donde no se encuentra el usuario
+        return callback(new Error('Usuario no encontrado')); 
       }
     });
   },
