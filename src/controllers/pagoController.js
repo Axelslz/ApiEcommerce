@@ -74,9 +74,25 @@ const obtenerPagosPorPoliza = async (req, res) => {
     }
 };
 
+const obtenerTodosLosPagos = async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 5;
+        const page = parseInt(req.query.page) || 1;
+        const offset = (page - 1) * limit;
+
+        const { pagos, totalPages } = await PagoService.obtenerTodosLosPagosPaginado(limit, offset);
+
+        res.status(200).json({ pagos, totalPages });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+
 module.exports = {
     generarPagos,
     agregarPagoAutomatico,
-    obtenerPagosPorPoliza
+    obtenerPagosPorPoliza,
+    obtenerTodosLosPagos
 };
 

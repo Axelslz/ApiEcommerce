@@ -51,17 +51,26 @@ const UserController = {
   login: async (req, res) => {
     const { email, password } = req.body;
     try {
-      const result = await UserService.login(email, password)
+      const result = await UserService.login(email, password);
+      
+      // Excluye la contraseña de la respuesta
+      const { password: _password, ...userWithoutPassword } = result.user;
+  
       res.status(200).json({
         message: 'Login exitoso',
-        user: result.user,
-        token: result.token,
+        user: {
+          ...userWithoutPassword,  // Todos los datos del usuario excepto la contraseña
+          profile_picture: result.user.profile_picture  // Agregar explícitamente el link de la imagen de perfil
+        },
+        token: result.token  // El token JWT
       });
     } catch (error) {
-      res.status(401).json({ message: error });
+      console.error('Error en login:', error);
+      res.status(401).json({ message: error.message || 'Error en autenticación' });
     }
   },
-
+  
+  
   requestPasswordReset: async (req, res) => {
     const { userId } = req.body;
     try {
@@ -99,11 +108,10 @@ const UserController = {
     const updatedData = req.body;
   
     try {
-
       if (req.file) {
         const result = await new Promise((resolve, reject) => {
           const uploadStream = cloudinary.uploader.upload_stream({
-            folder: 'UserImg-Agentlite', 
+            folder: 'UserImg-Agentlite',
             resource_type: 'image'
           }, (error, result) => {
             if (error) return reject(error);
@@ -118,17 +126,24 @@ const UserController = {
         });
         updatedData.profile_picture = result.secure_url; 
       }
-  
+
       const updatedUser = await UserService.updateUser(userId, updatedData);
+
+      const token = jwt.sign({ id: updatedUser.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+      const { password, ...userWithoutPassword } = updatedUser;
+
       res.status(200).json({
         message: 'Usuario actualizado exitosamente',
-        user: updatedUser,
+        user: userWithoutPassword,
+        token, 
       });
     } catch (error) {
       console.error('Error al actualizar el usuario:', error);
       res.status(500).json({ message: `Error al actualizar el usuario: ${error.message || error}` });
     }
   },
+  
   
 };
 

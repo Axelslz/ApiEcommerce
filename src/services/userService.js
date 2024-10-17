@@ -31,7 +31,6 @@ const UserService = {
           } else {
             const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
             delete user.password;
-            delete user.profile_picture;
             resolve({ user, token });
           }
         }
@@ -125,7 +124,6 @@ const UserService = {
       });
     });
   },
-  
 
 };
 

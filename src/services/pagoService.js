@@ -42,10 +42,25 @@ const obtenerPagosPorPolizaPaginado = async (poliza_id, limit = 5, offset = 0) =
     }
 };
 
+const obtenerTodosLosPagosPaginado = async (limit = 5, offset = 0) => {
+    try {
+        const pagos = await PagoModel.obtenerTodosLosPagosPaginado(limit, offset);
+        const totalPagos = await PagoModel.contarPagosTotales();
+        const totalPages = Math.ceil(totalPagos / limit);
+        return { pagos, totalPages };
+    } catch (error) {
+        throw new Error('Error al obtener todos los pagos paginados');
+    }
+};
+
+
+
+
 
 module.exports = {
     generarPagos,
-    obtenerPagosPorPolizaPaginado
+    obtenerPagosPorPolizaPaginado,
+    obtenerTodosLosPagosPaginado
 };
 
 

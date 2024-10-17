@@ -52,7 +52,41 @@ const PagoModel = {
                 resolve(results[0].total);
             });
         });
-    }
+    },
+
+   obtenerTodosLosPagosPaginado: (limit, offset) => {
+    const query = `
+        SELECT pagos.*, clientes.nombre, clientes.apellidos
+        FROM pagos
+        JOIN polizas ON pagos.poliza_id = polizas.id
+        JOIN clientes ON polizas.cliente_id = clientes.id
+        LIMIT ? OFFSET ?;
+    `;
+
+    return new Promise((resolve, reject) => {
+        db.query(query, [limit, offset], (err, results) => {
+            if (err) return reject(err);
+            resolve(results);
+        });
+    });
+},
+
+contarPagosTotales: () => {
+    const query = `
+        SELECT COUNT(*) AS total
+        FROM pagos
+        JOIN polizas ON pagos.poliza_id = polizas.id
+        JOIN clientes ON polizas.cliente_id = clientes.id;
+    `;
+
+    return new Promise((resolve, reject) => {
+        db.query(query, [], (err, results) => {
+            if (err) return reject(err);
+            resolve(results[0].total);
+        });
+    });
+},
+
 };
 
 module.exports = PagoModel;
