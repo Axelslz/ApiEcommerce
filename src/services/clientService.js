@@ -1,5 +1,7 @@
 const ClientModel = require('../models/clientModel');
 
+const ITEMS_PER_PAGE = 5;
+
 const ClientService = {
     addClient: async (data) => {
         try {
@@ -19,23 +21,66 @@ const ClientService = {
         }
     },
 
-    searchClients: async (searchTerm, user_id, page, limit = 5) => {
-        const offset = (page - 1) * limit;
-
-        const clients = await ClientModel.searchClients(searchTerm, user_id, limit, offset);
-        const total = await ClientModel.getTotalClientsBySearch(searchTerm, user_id);
-
-        return { clients, total, totalPages: Math.ceil(total / limit) };
-    },
-
     getClientsPaginated: async (user_id, page = 1, limit = 5) => {
         const offset = (page - 1) * limit;
-
+    
         try {
-            const totalClients = await ClientModel.getTotalClientsByUserId(user_id); // Filtrando por user_id
+            // Obtener el total de clientes del usuario
+            const totalClients = await ClientModel.getTotalClientsByUserId(user_id);
             const totalPages = Math.ceil(totalClients / limit);
-            const clients = await ClientModel.getClientsPaginated(user_id, limit, offset);
-
+            
+            // Obtener los clientes con la paginación
+            const clients = await ClientModel.getClientsByUserId(user_id, limit, offset);
+    
+            return {
+                clients,
+                totalPages: totalPages || 1, // Al menos una página si no hay resultados
+                totalItems: totalClients,
+                currentPage: page,
+                limit
+            };
+        } catch (error) {
+            throw new Error("Error al obtener clientes paginados: " + error.message);
+        }
+    },
+ 
+    getClientsBySearchPaginated: async (searchTerm, page = 1, limit = 5) => {
+        const offset = (page - 1) * limit;
+    
+        try {
+            // Verifica que el offset no sea negativo
+            if (offset < 0) {
+                throw new Error("El número de página no puede ser menor que 1");
+            }
+    
+            // Total de clientes para la paginación
+            const totalClients = await ClientModel.getTotalClientsBySearch(searchTerm);
+            const totalPages = Math.ceil(totalClients / limit);
+            
+            // Clientes paginados
+            const clients = await ClientModel.searchClients(searchTerm, limit, offset);
+    
+            return {
+                clients,
+                totalPages: totalPages || 1,  // Al menos una página
+                totalItems: totalClients,
+                currentPage: page,
+                limit
+            };
+        } catch (error) {
+            throw new Error("Error al obtener clientes paginados por búsqueda: " + error.message);
+        }
+    },
+    
+    
+    getClientsPaginated: async (user_id, searchTerm = '', page = 1, limit = 5) => {
+        const offset = (page - 1) * limit;
+    
+        try {
+            const totalClients = await ClientModel.getTotalClientsBySearch(searchTerm, user_id); // Filtrar por término y user_id
+            const totalPages = Math.ceil(totalClients / limit);
+            const clients = await ClientModel.searchClients(user_id, searchTerm, limit, offset);
+    
             return {
                 clients,
                 totalPages,
@@ -47,6 +92,7 @@ const ClientService = {
             throw new Error("Error al obtener clientes paginados: " + error.message);
         }
     },
+
 
     getClientById: async (id) => { 
         try {
@@ -96,17 +142,16 @@ const ClientService = {
         }
     },
 
-    buscarClientes: async (searchTerm, limit, offset) => {
-        try {
-            const clientes = await ClientModel.buscarClientes(searchTerm, limit, offset);
-            const total = await ClientModel.getTotalClientesBySearch(searchTerm);
-            const totalPages = Math.ceil(total / limit);
 
-            return { clientes, totalPages };
+    getAllDownloadByUserId: async (userId) => {
+        try {
+            const clients = await ClientModel.getClientsByUserId(userId, 1000000, 0); // Usar un número grande
+            return clients;
         } catch (error) {
-            throw new Error('Error al buscar clientes');
+            throw new Error("Error al obtener todos los clientes: " + error.message);
         }
     },
+    
 };
 
 module.exports = ClientService;

@@ -1,5 +1,6 @@
 const clientService = require('../services/clientService');
 const { calcularEdad } = require('../utils/calcularEdad');
+const createXlsx = require('../utils/createXlsx'); 
 
 exports.addClient = async (req, res) => {
     try {
@@ -59,23 +60,18 @@ exports.updateClient = async (req, res) => {
     }
 };
 
-exports.buscarClientes = async (req, res) => {
+exports.searchClients = async (req, res) => {
     try {
-        const userId = req.params.usuario_id;
-        const searchTerm = req.query.term || '';
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 5;
-
-        const { clients, total, totalPages } = await clientService.searchClients(searchTerm, userId, page, limit);
-
-        res.status(200).json({
-            message: 'Clientes encontrados exitosamente',
-            clients,
-            total,
-            totalPages,
-            currentPage: page,
-        });
+        const searchTerm = req.query.term || '';  // Parámetro de búsqueda
+        const page = parseInt(req.query.page) || 1;  // Página actual
+        const limit = parseInt(req.query.limit) || 5;  // Límite por página
+        
+        // Llamamos al servicio que maneja la búsqueda paginada
+        const result = await clientService.getClientsBySearchPaginated(req.user.id, searchTerm, page, limit);
+        
+        res.status(200).json(result);
     } catch (error) {
+        console.error("Error en el controlador de búsqueda de clientes:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -118,7 +114,6 @@ exports.getClientsByUserId = async (req, res) => {
 };
 
 
-
 exports.getClientsPaginated = async (req, res) => {
     try {
         const userId = req.user.id; 
@@ -137,7 +132,19 @@ exports.getClientsPaginated = async (req, res) => {
     }
 };
 
-
+exports.downloadAllClients = async (req, res) => {
+    try {
+        const userId = req.params.usuario_id;
+        const clients = await clientService.getAllDownloadByUserId(userId);
+        
+        // Crear el archivo XLSX y devolverlo
+        const filePath = await createXlsx(clients, 'Clientes');
+        res.download(filePath, 'todos_clientes.xlsx');
+    } catch (error) {
+        console.error('Error al descargar todos los clientes:', error);
+        res.status(500).json({ error: 'Error al descargar todos los clientes' });
+    }
+};
 
 
 

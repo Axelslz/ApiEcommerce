@@ -85,25 +85,49 @@ class PolizaService {
 
     static obtenerTodasPolizas(limit, offset) {
         return new Promise((resolve, reject) => {
-            Poliza.getAllPolicies(limit, offset, (err, results) => {
+            Poliza.obtenerTodasPolizas(limit, offset, (err, results) => {
                 if (err) return reject(err);
-
-                Poliza.getTotalPolicies((err, total) => {
+    
+                Poliza.getTotalPolicies((err, totalResult) => {
                     if (err) return reject(err);
+                    const total = totalResult[0]?.total || 0;
                     const totalPages = Math.ceil(total / limit);
                     resolve({ polizas: results, totalPages });
                 });
             });
         });
+    }    
+    
+    static getTotalPoliciesByUser(userId, callback) {
+        const query = `
+            SELECT COUNT(*) AS total 
+            FROM polizas p
+            JOIN clientes c ON p.cliente_id = c.id
+            WHERE c.user_id = ?`;
+        db.query(query, [userId], callback);
     }
+
     static obtenerPolizasPorCliente(cliente_id, limit, offset) {
         return new Promise((resolve, reject) => {
+            // Asegurarse de que limit y offset sean números o undefined
+            limit = typeof limit === 'number' ? limit : undefined;
+            offset = typeof offset === 'number' ? offset : undefined;
+    
             Poliza.obtenerPolizasPorCliente(cliente_id, limit, offset, (err, results) => {
                 if (err) return reject(err);
                 resolve(results);
             });
         });
     }
+    
+    static obtenerPolizasPorUsuario(usuario_id) {
+        return new Promise((resolve, reject) => {
+            Poliza.obtenerPolizasPorUsuario(usuario_id, (err, results) => {
+                if (err) return reject(err);
+                resolve(results);
+            });
+        });
+    }    
 
     static getTotalPoliciesByCliente(cliente_id) {
         return new Promise((resolve, reject) => {
@@ -113,7 +137,108 @@ class PolizaService {
             });
         });
     }
-    
+
+    static actualizarPolizaArchivo(id, archivo_pdf_url) {
+        return new Promise((resolve, reject) => {
+            const sql = 'UPDATE polizas SET archivo_pdf = ? WHERE id = ?';
+            Poliza.db.query(sql, [archivo_pdf_url, id], (err, result) => {
+                if (err) return reject(err);
+                resolve(result);
+            });
+        });
+    }
+
+    static obtenerPolizasConDetalles(limit, offset) {
+        return new Promise((resolve, reject) => {
+            Poliza.obtenerPolizas(limit, offset, (err, polizas) => {
+                if (err) {
+                    console.error('Error en PolizaService al obtener pólizas:', err);
+                    return reject(err);
+                }
+
+                const polizasConDetalles = [];
+                let promises = polizas.map(poliza => {
+                    return new Promise((resolve, reject) => {
+                        Poliza.obtenerNombresYApellidos(poliza.cliente_id, (err, cliente) => {
+                            if (err) return reject(err);
+
+                            // Asegúrate de que `cliente` no sea `undefined`
+                            if (cliente) {
+                                polizasConDetalles.push({
+                                    ...poliza,
+                                    nombre: cliente.nombre,
+                                    apellidos: cliente.apellidos
+                                });
+                            }
+                            resolve();
+                        });
+                    });
+                });
+
+                Promise.all(promises)
+                    .then(() => {
+                        console.log('Resultados obtenidos en PolizaService:', polizasConDetalles);
+                        resolve(polizasConDetalles);
+                    })
+                    .catch(err => {
+                        console.error('Error al obtener nombres y apellidos en PolizaService:', err);
+                        reject(err);
+                    });
+            });
+        });
+    }
+
+    static async getPoliciesBySearchPaginated(searchTerm = '', page = 1, limit = 5) {
+        const pageNumber = parseInt(page, 10) || 1;
+        const limitNumber = parseInt(limit, 10) || 5;
+        const offset = (pageNumber - 1) * limitNumber;
+
+        try {
+            // Validación de que el número de página sea válido
+            if (offset < 0) {
+                throw new Error("El número de página no puede ser menor que 1");
+            }
+
+            // Total de pólizas para la paginación
+            const totalPolicies = await Poliza.getTotalPoliciesBySearch(searchTerm);
+            const totalPages = Math.ceil(totalPolicies / limitNumber);
+
+            // Si la página solicitada está fuera del rango, retornar una respuesta vacía
+            if (pageNumber > totalPages) {
+                return {
+                    policies: [],
+                    totalPages,
+                    totalItems: totalPolicies,
+                    currentPage: pageNumber,
+                    limit: limitNumber
+                };
+            }
+
+            // Obtener pólizas paginadas
+            const policies = await Poliza.searchPolicies(searchTerm, limitNumber, offset);
+
+            return {
+                policies,
+                totalPages,
+                totalItems: totalPolicies,
+                currentPage: pageNumber,
+                limit: limitNumber
+            };
+        } catch (error) {
+            throw new Error("Error al obtener pólizas paginadas por búsqueda: " + error.message);
+        }
+    }
+
+    static obtenerPolizaPorId(id) {
+        return new Promise((resolve, reject) => {
+            const sql = 'SELECT * FROM polizas WHERE id = ?';
+            this.db.query(sql, [id], (err, results) => {
+                if (err) return reject(err);
+                if (results.length === 0) return resolve(null);
+                resolve(results[0]);
+            });
+        });
+    }
 }
 
 module.exports = PolizaService;

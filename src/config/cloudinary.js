@@ -10,12 +10,16 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'UserImg-Agentlite', 
-    allowed_formats: ['jpeg', 'png', 'jpg'], 
+  params: async (req, file) => {
+    return {
+      folder: file.mimetype === 'application/pdf' ? 'PolizaPDF-Agentlite' : 'UserImg-Agentlite',
+      resource_type: 'auto', 
+      allowed_formats: ['jpeg', 'png', 'jpg', 'pdf'], 
+    };
   },
 });
 
 const upload = multer({ storage });
 
 module.exports = { cloudinary, upload };
+

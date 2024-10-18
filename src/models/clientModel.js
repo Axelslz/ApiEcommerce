@@ -76,18 +76,17 @@ const ClientModel = {
         });
     },
 
-    getClientsByUserId: (userId, limit, offset) => {
-        const query = 'SELECT * FROM clientes WHERE user_id = ? LIMIT ? OFFSET ?';
+    getClientsByUserId: (userId, limit = 5, offset = 0) => {
         return new Promise((resolve, reject) => {
-            db.query(query, [userId, limit, offset], (err, results) => {
-                if (err) {
-                    return reject(err);
-                }
+            const sql = `SELECT * FROM clientes WHERE user_id = ? LIMIT ? OFFSET ?`;
+            db.query(sql, [userId, limit, offset], (err, results) => {
+                if (err) return reject(err);
                 resolve(results);
             });
         });
     },
-
+    
+    
     getTotalClientsByUserId: (userId) => {
         const query = 'SELECT COUNT(*) AS total FROM clientes WHERE user_id = ?';
         return new Promise((resolve, reject) => {
@@ -111,37 +110,44 @@ const ClientModel = {
         });
     }, 
 
-    searchClients: (searchTerm, user_id, limit, offset) => {
+    searchClients: (searchTerm, limit, offset) => {
+        if (!searchTerm || limit <= 0 || offset < 0) {
+            return Promise.reject(new Error("Faltan parámetros para la búsqueda de clientes"));
+        }
+    
         const query = `
-            SELECT * FROM clientes 
-            WHERE (nombre LIKE ? OR apellidos LIKE ? OR telefono LIKE ? OR correo LIKE ? OR contacto_emergencia LIKE ? OR fecha_nacimiento LIKE ?)
-            AND user_id = ? LIMIT ? OFFSET ?
+            SELECT * FROM clientes
+            WHERE (nombre LIKE ? OR apellidos LIKE ? OR telefono LIKE ? OR correo LIKE ?)
+            LIMIT ? OFFSET ?
         `;
-        const likeTerm = `%${searchTerm}%`;
-
+        const likeSearchTerm = `%${searchTerm}%`;
+    
         return new Promise((resolve, reject) => {
-            db.query(query, [likeTerm, likeTerm, likeTerm, likeTerm, likeTerm, likeTerm, user_id, limit, offset], (err, results) => {
+            db.query(query, [
+                likeSearchTerm, likeSearchTerm, likeSearchTerm, likeSearchTerm, 
+                limit, offset
+            ], (err, results) => {
                 if (err) return reject(err);
                 resolve(results);
             });
         });
-    },
-
-    getTotalClientsBySearch: (searchTerm, user_id) => {
+    },    
+    
+    getTotalClientsBySearch: async (searchTerm) => {
         const query = `
-            SELECT COUNT(*) AS total FROM clientes 
-            WHERE (nombre LIKE ? OR apellidos LIKE ? OR telefono LIKE ? OR correo LIKE ? OR contacto_emergencia LIKE ? OR fecha_nacimiento LIKE ?)
-            AND user_id = ?
+            SELECT COUNT(*) AS total FROM clientes
+            WHERE nombre LIKE ? OR apellidos LIKE ? OR telefono LIKE ? OR correo LIKE ?
         `;
-        const likeTerm = `%${searchTerm}%`;
-
+        const likeSearchTerm = `%${searchTerm}%`;
+    
         return new Promise((resolve, reject) => {
-            db.query(query, [likeTerm, likeTerm, likeTerm, likeTerm, likeTerm, likeTerm, user_id], (err, results) => {
+            db.query(query, [likeSearchTerm, likeSearchTerm, likeSearchTerm, likeSearchTerm], (err, results) => {
                 if (err) return reject(err);
-                resolve(results[0].total);
+                resolve(results[0].total);  // Retorna el total
             });
         });
-    }
+    },
+
 };
 
 module.exports = ClientModel;
