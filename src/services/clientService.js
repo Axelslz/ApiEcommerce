@@ -25,16 +25,15 @@ const ClientService = {
         const offset = (page - 1) * limit;
     
         try {
-            // Obtener el total de clientes del usuario
+    
             const totalClients = await ClientModel.getTotalClientsByUserId(user_id);
             const totalPages = Math.ceil(totalClients / limit);
             
-            // Obtener los clientes con la paginación
             const clients = await ClientModel.getClientsByUserId(user_id, limit, offset);
     
             return {
                 clients,
-                totalPages: totalPages || 1, // Al menos una página si no hay resultados
+                totalPages: totalPages || 1, 
                 totalItems: totalClients,
                 currentPage: page,
                 limit
@@ -48,21 +47,19 @@ const ClientService = {
         const offset = (page - 1) * limit;
     
         try {
-            // Verifica que el offset no sea negativo
+
             if (offset < 0) {
                 throw new Error("El número de página no puede ser menor que 1");
             }
-    
-            // Total de clientes para la paginación
+
             const totalClients = await ClientModel.getTotalClientsBySearch(searchTerm);
             const totalPages = Math.ceil(totalClients / limit);
             
-            // Clientes paginados
             const clients = await ClientModel.searchClients(searchTerm, limit, offset);
     
             return {
                 clients,
-                totalPages: totalPages || 1,  // Al menos una página
+                totalPages: totalPages || 1,  
                 totalItems: totalClients,
                 currentPage: page,
                 limit
@@ -77,7 +74,7 @@ const ClientService = {
         const offset = (page - 1) * limit;
     
         try {
-            const totalClients = await ClientModel.getTotalClientsBySearch(searchTerm, user_id); // Filtrar por término y user_id
+            const totalClients = await ClientModel.getTotalClientsBySearch(searchTerm, user_id); 
             const totalPages = Math.ceil(totalClients / limit);
             const clients = await ClientModel.searchClients(user_id, searchTerm, limit, offset);
     
@@ -145,7 +142,7 @@ const ClientService = {
 
     getAllDownloadByUserId: async (userId) => {
         try {
-            const clients = await ClientModel.getClientsByUserId(userId, 1000000, 0); // Usar un número grande
+            const clients = await ClientModel.getClientsByUserId(userId, 1000000, 0); 
             return clients;
         } catch (error) {
             throw new Error("Error al obtener todos los clientes: " + error.message);

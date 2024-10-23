@@ -62,11 +62,10 @@ exports.updateClient = async (req, res) => {
 
 exports.searchClients = async (req, res) => {
     try {
-        const searchTerm = req.query.term || '';  // Parámetro de búsqueda
-        const page = parseInt(req.query.page) || 1;  // Página actual
-        const limit = parseInt(req.query.limit) || 5;  // Límite por página
-        
-        // Llamamos al servicio que maneja la búsqueda paginada
+        const searchTerm = req.query.term || '';  
+        const page = parseInt(req.query.page) || 1;  
+        const limit = parseInt(req.query.limit) || 5;  
+
         const result = await clientService.getClientsBySearchPaginated(req.user.id, searchTerm, page, limit);
         
         res.status(200).json(result);
@@ -136,8 +135,7 @@ exports.downloadAllClients = async (req, res) => {
     try {
         const userId = req.params.usuario_id;
         const clients = await clientService.getAllDownloadByUserId(userId);
-        
-        // Crear el archivo XLSX y devolverlo
+
         const filePath = await createXlsx(clients, 'Clientes');
         res.download(filePath, 'todos_clientes.xlsx');
     } catch (error) {

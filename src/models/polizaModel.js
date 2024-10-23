@@ -47,79 +47,24 @@ module.exports = {
             callback(null, results[0]); 
         });
     },
-
-    searchPolicies(searchTerm, limit, offset) {
-        // Validación de parámetros
-        if (limit <= 0 || offset < 0) {
-            return Promise.reject(new Error("Faltan parámetros para la búsqueda de pólizas"));
-        }
     
-        const query = `
-            SELECT * FROM polizas
-            WHERE (tipo_seguro LIKE ? OR asegurado LIKE ? OR prima_neta LIKE ?)
-            LIMIT ? OFFSET ?
-        `;
-        const likeSearchTerm = `%${searchTerm || ''}%`;  // Si searchTerm está vacío, busca todo
-    
-        return new Promise((resolve, reject) => {
-            db.query(query, [
-                likeSearchTerm, likeSearchTerm, likeSearchTerm,
-                limit, offset
-            ], (err, results) => {
-                if (err) return reject(err);
-                resolve(results);
-            });
-        });
-    },
-    
-    
-    getTotalPoliciesBySearch(searchTerm) {
-        const query = `
-            SELECT COUNT(*) AS total FROM polizas 
-            WHERE (tipo_seguro LIKE ? OR asegurado LIKE ? OR vigencia_hasta LIKE ? OR prima_neta LIKE ? OR archivo_pdf LIKE ?)
-        `;
-        const likeTerm = `%${searchTerm}%`;
-    
-        return new Promise((resolve, reject) => {
-            db.query(query, [
-                likeTerm, likeTerm, likeTerm,
-                likeTerm, likeTerm
-            ], (err, results) => {
-                if (err) return reject(err);
-                resolve(results[0].total);  // Retorna el total
-            });
-        });
-    },
-    
-    getTotalFilteredPolicies: (searchTerm, callback) => {
-        const sql = `SELECT COUNT(*) AS total FROM polizas WHERE tipo_seguro LIKE ? OR asegurado LIKE ?`;
-        db.query(sql, [`%${searchTerm}%`, `%${searchTerm}%`], (err, results) => {
-            callback(err, results[0].total);
-        });
-    },
-
-    getTotalPolicies: (callback) => {
-        const query = 'SELECT COUNT(*) AS total FROM polizas';
-        db.query(query, callback);
-    },
-    
-    obtenerTodasPolizas: (limit, offset, callback) => {
-        const query = 'SELECT * FROM polizas LIMIT ? OFFSET ?';
-        db.query(query, [limit, offset], callback);
-    },
-    
-
     obtenerPolizasPorCliente: (cliente_id, limit, offset, callback) => {
         let query = 'SELECT * FROM polizas WHERE cliente_id = ?';
         let params = [cliente_id];
-    
-        // Solo agregar LIMIT y OFFSET si existen valores válidos
         if (typeof limit === 'number' && typeof offset === 'number') {
             query += ' LIMIT ? OFFSET ?';
             params.push(limit, offset);
         }
     
         db.query(query, params, callback);
+    },
+
+    getTotalPoliciesByCliente: (cliente_id, callback) => {
+        const query = 'SELECT COUNT(*) AS total FROM polizas WHERE cliente_id = ?';
+        db.query(query, [cliente_id], (err, results) => {
+            if (err) return callback(err);
+            callback(null, results[0].total);
+        });
     },
     
     obtenerPolizasConDetalles: (limit, offset, callback) => {
@@ -140,12 +85,12 @@ module.exports = {
                 return callback(err, null);
             }
     
-            console.log('Resultados de la consulta SQL:', results); // Log para verificar resultados
+            console.log('Resultados de la consulta SQL:', results); 
             callback(null, results);
         });
     },
 
-   obtenerPolizas: (limit, offset, callback) => {
+    obtenerPolizas: (limit, offset, callback) => {
         const query = `
             SELECT id, tipo_seguro, aseguradora, asegurado, vigencia_hasta, cliente_id
             FROM polizas
@@ -180,84 +125,52 @@ module.exports = {
             }
 
             console.log('Resultados de nombres y apellidos:', results);
-            callback(null, results[0]); // Retorna el primer resultado
+            callback(null, results[0]); 
         });
     },
 
-    obtenerPolizasPorUsuario: (user_id, callback) => {
+    obtenerPolizasPorUsuario: (user_id, limit, offset, callback) => {
         const query = `
             SELECT p.* 
             FROM polizas p
             JOIN clientes c ON p.cliente_id = c.id
             WHERE c.user_id = ?
+            LIMIT ? OFFSET ?
         `;
-        db.query(query, [user_id], callback);
-    },
-
-    getTotalPoliciesByCliente: (cliente_id, callback) => {
-        const query = 'SELECT COUNT(*) AS total FROM polizas WHERE cliente_id = ?';
-        db.query(query, [cliente_id], (err, results) => {
+        const countQuery = `
+            SELECT COUNT(*) as total
+            FROM polizas p
+            JOIN clientes c ON p.cliente_id = c.id
+            WHERE c.user_id = ?
+        `;
+        db.query(countQuery, [user_id], (err, countResult) => {
             if (err) return callback(err);
-            callback(null, results[0].total);
-        });
-    },
-
-    getAllPolicies: (limit, offset, callback) => {
-        const query = 'SELECT * FROM polizas LIMIT ? OFFSET ?';
-        db.query(query, [limit, offset], (err, results) => {
-            if (err) return callback(err);
-            callback(null, results);
-        });
-    },
-
-    searchPoliciesMassive: (query, limit, offset, callback) => {
-        const sql = `SELECT * FROM polizas WHERE tipo_seguro LIKE ? OR asegurado LIKE ? LIMIT ? OFFSET ?`;
-        const searchTerm = `%${query}%`;
-        db.query(sql, [searchTerm, searchTerm, limit, offset], (err, results) => {
-            if (err) return callback(err);
-            callback(null, results);
-        });
-    },
-    getPolicyByClientId: (clientId) => {
-        const query = 'SELECT * FROM polizas WHERE client_id = ?';
-        return new Promise((resolve, reject) => {
-            db.query(query, [clientId], (err, results) => {
-                if (err) return reject(err);
-                if (results.length === 0) return resolve(null);
-                resolve(results[0]);
+            const totalPolizas = countResult[0].total;
+            db.query(query, [user_id, limit, offset], (err, polizasResult) => {
+                if (err) return callback(err);
+                callback(null, { polizas: polizasResult, totalPolizas });
             });
         });
     },
 
-    obtenerPolizasPorUsuario: (user_id, limit, offset, callback) => {
-        let query = `
+    buscarPolizasPorUsuario: (user_id, searchTerm, limit, offset, callback) => {
+        const query = `
             SELECT p.*
             FROM polizas p
-            INNER JOIN clientes c ON p.cliente_id = c.id
-            WHERE c.user_id = ?
-            LIMIT ? OFFSET ?`;
-    
-        db.query(query, [user_id, limit, offset], (err, results) => {
-            if (err) return callback(err);
-            callback(null, results);
-        });
-    },
-    
-    getTotalPoliciesByUser: (user_id, callback) => {
-        const query = `
-            SELECT COUNT(*) AS total 
-            FROM polizas p
             JOIN clientes c ON p.cliente_id = c.id
-            WHERE c.user_id = ?`;
-    
-        db.query(query, [user_id], (err, results) => {
-            if (err) return callback(err);
-            callback(null, results[0].total);
-        });
+            WHERE c.user_id = ? AND (
+                p.tipo_seguro LIKE ? OR
+                p.asegurado LIKE ? OR
+                p.periodicidad_pago LIKE ? OR
+                p.archivo_pdf LIKE ?
+            )
+            LIMIT ? OFFSET ?
+        `;
+        
+        const params = [user_id, `%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`, limit, offset];
+
+        db.query(query, params, callback);
     },
-
-    
-
     
 };
 

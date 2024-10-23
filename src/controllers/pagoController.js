@@ -88,11 +88,33 @@ const obtenerTodosLosPagos = async (req, res) => {
     }
 };
 
+const obtenerPagosPorPolizaPorID = async (req, res) => {
+    try {
+        const { poliza_id } = req.params;
+        const limit = parseInt(req.query.limit) || 5;
+        const page = parseInt(req.query.page) || 1;
+        const offset = (page - 1) * limit;
+
+        const { pagos, totalPages } = await PagoService.obtenerPagosPorPolizaPorID(poliza_id, limit, offset);
+
+        // Devolver el formato esperado por el cliente
+        res.status(200).json({
+            monto: pagos.length > 0 ? pagos[0].monto : null, // Asumiendo que todos los pagos tienen el mismo monto
+            periodicidad: 'Mensual', // Esto debe calcularse o inferirse de la póliza, por ahora está estático
+            poliza_id,
+            pagos, 
+            totalPages
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
 module.exports = {
     generarPagos,
     agregarPagoAutomatico,
     obtenerPagosPorPoliza,
-    obtenerTodosLosPagos
+    obtenerTodosLosPagos,
+    obtenerPagosPorPolizaPorID
 };
 

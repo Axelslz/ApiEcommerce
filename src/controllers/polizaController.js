@@ -80,31 +80,10 @@ exports.obtenerPolizaPorId = async (req, res) => {
 
         res.status(200).json(poliza);
     } catch (err) {
+        console.error(err); 
         res.status(500).json({ error: err.message });
     }
 };
-
-exports.obtenerTodasPolizas = async (req, res) => {
-    try {
-        const limit = parseInt(req.query.limit) || 5;
-        const page = parseInt(req.query.page) || 1;
-        const offset = (page - 1) * limit;
-
-        // Obtener todas las pólizas
-        const { polizas, totalPages } = await polizaService.obtenerTodasPolizas(limit, offset);
-
-        // Verificar si hay pólizas
-        if (polizas.length === 0) {
-            return res.status(404).json({ message: 'No hay pólizas disponibles' });
-        }
-
-        res.status(200).json({ polizas, totalPages });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
-
-
 
 exports.obtenerPolizasPorCliente = async (req, res) => {
     try {
@@ -123,12 +102,39 @@ exports.obtenerPolizasPorCliente = async (req, res) => {
     }
 };
 
-
-exports.buscarPolizas = async (req, res) => {
+exports.obtenerPolizasPorUsuario = async (req, res) => {
     try {
-        const { cliente_id } = req.params;
-        const { query } = req.query; // Por ejemplo, lo que buscas
-        const polizas = await polizaService.buscarPolizas(cliente_id, query); 
+        const { user_id } = req.params;
+        const page = parseInt(req.query.page) || 1;  
+
+        const result = await polizaService.obtenerPolizasPorUsuario(user_id, page);
+        if (result.polizas.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron pólizas para este usuario' });
+        }
+        
+        res.status(200).json({
+            polizas: result.polizas,
+            totalPolizas: result.totalPolizas,
+            totalPages: result.totalPages,
+            currentPage: result.currentPage
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.buscarPolizasPorUsuario = async (req, res) => {
+    try {
+        const { user_id } = req.params;
+        const searchTerm = req.query.search || '';  
+        const page = parseInt(req.query.page) || 1;  
+
+        const polizas = await polizaService.buscarPolizasPorUsuario(user_id, searchTerm, page);
+        
+        if (polizas.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron pólizas que coincidan con los criterios de búsqueda' });
+        }
+        
         res.status(200).json(polizas);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -145,21 +151,12 @@ exports.getTotalPoliciesByCliente = async (req, res) => {
     }
 };
 
-exports.getTotalPolicies = async (req, res) => {
-    try {
-        const total = await polizaService.getTotalPolicies(); 
-        res.status(200).json({ total });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
 
 exports.downloadAllPolicies = async (req, res) => {
     try {
         const userId = req.params.usuario_id;
         const policies = await polizaService.obtenerPolizasPorUsuario(userId);
 
-        // Crear el archivo XLSX y devolverlo
         const filePath = await createXlsx(policies, 'Polizas');
         res.download(filePath, 'todas_polizas.xlsx');
     } catch (error) {
@@ -184,7 +181,23 @@ exports.obtenerPolizasConDetalles = async (req, res) => {
     }
 };
 
+exports.obtenerTodasPolizas = async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 5;
+        const page = parseInt(req.query.page) || 1;
+        const offset = (page - 1) * limit;
 
+        const { polizas, totalPages } = await polizaService.obtenerTodasPolizas(limit, offset);
+
+        if (polizas.length === 0) {
+            return res.status(404).json({ message: 'No hay pólizas disponibles' });
+        }
+
+        res.status(200).json({ polizas, totalPages });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
 
 
 
