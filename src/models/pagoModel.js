@@ -53,39 +53,70 @@ const PagoModel = {
             });
         });
     },
+     
+    getPagosPorUsuarioPaginado: (userId, limit, offset) => {
+        const query = `
+            SELECT p.asegurado AS nombre_asegurado, pa.monto, pa.fecha_pago, pa.status, pa.created_at AS emision_pago
+            FROM polizas p
+            JOIN pagos pa ON p.id = pa.poliza_id
+            JOIN clientes c ON p.cliente_id = c.id
+            WHERE c.user_id = ?
+            GROUP BY p.id
+            ORDER BY pa.fecha_pago DESC
+            LIMIT ? OFFSET ?;`; 
 
-   obtenerTodosLosPagosPaginado: (limit, offset) => {
-    const query = `
-        SELECT pagos.*, clientes.nombre, clientes.apellidos
-        FROM pagos
-        JOIN polizas ON pagos.poliza_id = polizas.id
-        JOIN clientes ON polizas.cliente_id = clientes.id
-        LIMIT ? OFFSET ?;
-    `;
-
-    return new Promise((resolve, reject) => {
-        db.query(query, [limit, offset], (err, results) => {
-            if (err) return reject(err);
-            resolve(results);
+        return new Promise((resolve, reject) => {
+            db.query(query, [userId, limit, offset], (err, results) => {
+                if (err) return reject(err);
+                resolve(results);
+            });
         });
-    });
-},
+    },
 
-contarPagosTotales: () => {
-    const query = `
-        SELECT COUNT(*) AS total
-        FROM pagos
-        JOIN polizas ON pagos.poliza_id = polizas.id
-        JOIN clientes ON polizas.cliente_id = clientes.id;
-    `;
+    getTotalPaginas: (userId) => {
+        const countQuery = `
+            SELECT COUNT(DISTINCT p.id) AS total_policies
+            FROM polizas p
+            JOIN clientes c ON p.cliente_id = c.id
+            WHERE c.user_id = ?;`; 
 
-    return new Promise((resolve, reject) => {
-        db.query(query, [], (err, results) => {
-            if (err) return reject(err);
-            resolve(results[0].total);
+        return new Promise((resolve, reject) => {
+            db.query(countQuery, [userId], (err, result) => {
+                if (err) return reject(err);
+                const totalPages = Math.ceil(result[0].total_policies / 5); 
+                resolve(totalPages);
+            });
         });
-    });
-},
+    },
+
+    obtenerPolizaPorID: (poliza_id) => {
+        const query = `SELECT prima_neta, periodicidad_pago FROM polizas WHERE id = ?`;
+        return new Promise((resolve, reject) => {
+            db.query(query, [poliza_id], (err, results) => {
+                if (err) return reject(err);
+                console.log('Resultado de la póliza:', results); // Agrega este log
+                resolve(results.length > 0 ? results[0] : null);
+            });
+        });
+    },
+
+    obtenerPolizaPorIDPaginado: async (poliza_id, limit = 5, offset = 0) => {
+        try {
+            const poliza = await PagoModel.obtenerPolizaPorID(poliza_id);
+            const pagos = await PagoModel.obtenerPagosPorPolizaPaginado(poliza_id, limit, offset);
+            const totalPagos = await PagoModel.contarPagosPorPoliza(poliza_id);
+            const totalPages = Math.ceil(totalPagos / limit);
+            
+            return { 
+                poliza, 
+                pagos, 
+                totalPages 
+            };
+        } catch (error) {
+            throw new Error('Error al obtener la póliza y pagos paginados');
+        }
+    },
+    
 
 };
 

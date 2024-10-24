@@ -55,42 +55,40 @@ const obtenerPagosPorPolizaPaginado = async (poliza_id, limit = 5, offset = 0) =
     }
 };
 
-const obtenerTodosLosPagosPaginado = async (limit = 5, offset = 0) => {
-    try {
-        const pagos = await PagoModel.obtenerTodosLosPagosPaginado(limit, offset);
-        const totalPagos = await PagoModel.contarPagosTotales();
-        const totalPages = Math.ceil(totalPagos / limit);
-        return { pagos, totalPages };
-    } catch (error) {
-        throw new Error('Error al obtener todos los pagos paginados');
-    }
+const  obtenerPagosPorUsuarioPaginado = async (userId, page) => {
+    const limit = 5; 
+    const offset = (page - 1) * limit; 
+
+    const pagos = await PagoModel.getPagosPorUsuarioPaginado(userId, limit, offset);
+    const totalPages = await PagoModel.getTotalPaginas(userId); 
+
+    return { pagos, totalPages }; 
 };
 
-const obtenerPagosPorPolizaPorID = async (poliza_id, limit = 5, offset = 0) => {
+const obtenerPolizaPorIDPaginado = async (poliza_id, limit = 5, offset = 0) => {
     try {
+        const poliza = await PagoModel.obtenerPolizaPorID(poliza_id);
         const pagos = await PagoModel.obtenerPagosPorPolizaPaginado(poliza_id, limit, offset);
         const totalPagos = await PagoModel.contarPagosPorPoliza(poliza_id);
         const totalPages = Math.ceil(totalPagos / limit);
         
-        const pagosFormateados = pagos.map((pago, index) => ({
-            numeroPago: index + 1 + offset,
-            fecha_pago: pago.fecha_pago.toISOString().split('T')[0], // Formato YYYY-MM-DD
-            estado_pago: pago.status,
-            emision_pago: pago.created_at.toISOString().split('T')[0] // Fecha de creación como emisión
-        }));
-
-        return { pagos: pagosFormateados, totalPages };
+        return { 
+            poliza, 
+            pagos, 
+            totalPages 
+        };
     } catch (error) {
-        throw new Error('Error al obtener los pagos paginados');
+        throw new Error('Error al obtener la póliza y pagos paginados');
     }
 };
+
 
 
 module.exports = {
     generarPagos,
     obtenerPagosPorPolizaPaginado,
-    obtenerTodosLosPagosPaginado,
-    obtenerPagosPorPolizaPorID
+    obtenerPagosPorUsuarioPaginado,
+    obtenerPolizaPorIDPaginado
 };
 
 

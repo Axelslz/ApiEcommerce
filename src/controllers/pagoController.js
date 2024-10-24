@@ -74,17 +74,15 @@ const obtenerPagosPorPoliza = async (req, res) => {
     }
 };
 
-const obtenerTodosLosPagos = async (req, res) => {
+const obtenerPagosPorUsuarioPaginado = async (req, res) => {
+    const userId = req.params.userId; 
+    const page = parseInt(req.query.page) || 1; 
+
     try {
-        const limit = parseInt(req.query.limit) || 5;
-        const page = parseInt(req.query.page) || 1;
-        const offset = (page - 1) * limit;
-
-        const { pagos, totalPages } = await PagoService.obtenerTodosLosPagosPaginado(limit, offset);
-
-        res.status(200).json({ pagos, totalPages });
+        const { pagos, totalPages } = await PagoService.obtenerPagosPorUsuarioPaginado(userId, page);
+        res.json({ pagos, totalPages });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: 'Error al obtener los pagos', error });
     }
 };
 
@@ -95,12 +93,12 @@ const obtenerPagosPorPolizaPorID = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const offset = (page - 1) * limit;
 
-        const { pagos, totalPages } = await PagoService.obtenerPagosPorPolizaPorID(poliza_id, limit, offset);
+        const { poliza, pagos, totalPages } = await PagoService.obtenerPolizaPorIDPaginado(poliza_id, limit, offset);
+        console.log("Pagos obtenidos por póliza:", { pagos, totalPages }); // Para verificar la respuesta
 
-        // Devolver el formato esperado por el cliente
         res.status(200).json({
-            monto: pagos.length > 0 ? pagos[0].monto : null, // Asumiendo que todos los pagos tienen el mismo monto
-            periodicidad: 'Mensual', // Esto debe calcularse o inferirse de la póliza, por ahora está estático
+            prima_neta: poliza ? poliza.prima_neta : null,
+            periodicidad_pago: poliza ? poliza.periodicidad_pago : null,
             poliza_id,
             pagos, 
             totalPages
@@ -114,7 +112,7 @@ module.exports = {
     generarPagos,
     agregarPagoAutomatico,
     obtenerPagosPorPoliza,
-    obtenerTodosLosPagos,
+    obtenerPagosPorUsuarioPaginado,
     obtenerPagosPorPolizaPorID
 };
 
